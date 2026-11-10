@@ -1,6 +1,5 @@
 package hr.foi.squadsync
 
-import android.util.Patterns
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -32,47 +31,13 @@ class RegistrationViewModel : ViewModel() {
 
     fun provjeriPodatke() {
 
-        greske = RegistrationErrors(
-
-            ime = if (ime.isBlank()) {
-                "Unesite ime."
-            } else null,
-
-            prezime = if (prezime.isBlank()) {
-                "Unesite prezime."
-            } else null,
-
-            email = when {
-                email.isBlank() -> "Unesite e-poštu."
-
-                !Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches() ->
-                    "E-pošta nije ispravna."
-
-                else -> null
-            },
-
-            lozinka = when {
-                lozinka.isBlank() -> "Unesite lozinku."
-
-                lozinka.length < 8 ->
-                    "Lozinka mora imati najmanje 8 znakova."
-
-                else -> null
-            },
-
-            potvrdaLozinke = when {
-                potvrdaLozinke.isBlank() ->
-                    "Potvrdite lozinku."
-
-                potvrdaLozinke != lozinka ->
-                    "Lozinke se ne podudaraju."
-
-                else -> null
-            },
-
-            uloga = if (uloga.isBlank()) {
-                "Odaberite korisničku ulogu."
-            } else null
+        greske = RegistrationValidator.validate(
+            ime = ime,
+            prezime = prezime,
+            email = email,
+            lozinka = lozinka,
+            potvrdaLozinke = potvrdaLozinke,
+            uloga = uloga
         )
 
         val imaGresaka = listOf(
