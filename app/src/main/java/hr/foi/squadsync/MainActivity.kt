@@ -3,45 +3,65 @@ package hr.foi.squadsync
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.compose.BackHandler
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import hr.foi.squadsync.ui.theme.SquadSyncTheme
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
+
         setContent {
+
             SquadSyncTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+
+                var trenutniEkran by rememberSaveable {
+                    mutableStateOf("login")
+                }
+
+                // Povratak na prijavu tipkom Nazad
+
+                BackHandler(
+                    enabled = trenutniEkran == "registration"
+                ) {
+                    trenutniEkran = "login"
+                }
+
+                Scaffold(
+                    modifier = Modifier.fillMaxSize()
+                ) { innerPadding ->
+
+                    when (trenutniEkran) {
+
+                        "login" -> {
+
+                            LoginScreen(
+                                modifier = Modifier.padding(innerPadding),
+
+                                onRegistrationClick = {
+                                    trenutniEkran = "registration"
+                                }
+                            )
+                        }
+
+                        "registration" -> {
+
+                            RegistrationScreen(
+                                modifier = Modifier.padding(innerPadding)
+                            )
+                        }
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SquadSyncTheme {
-        Greeting("Android")
     }
 }
