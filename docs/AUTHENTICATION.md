@@ -1,6 +1,17 @@
 # Autentifikacija i sesija
 
-SquadSync trenutačno koristi lokalnu autentifikaciju. Računi postoje samo u ovoj instalaciji aplikacije, bez komunikacije s poslužiteljem. Pri prvoj uporabi treba registrirati račun. Registracija i prijava otvaraju profil, a odjava briše spremljenu sesiju i zadržava račun za sljedeću prijavu.
+SquadSync trenutačno koristi lokalnu autentifikaciju. Računi postoje samo u ovoj instalaciji aplikacije, bez komunikacije s poslužiteljem. Prijava dohvaća korisnika iz lokalne liste i provjerava njegovu lozinku. Registracija dodaje novog korisnika u istu listu. Obje akcije otvaraju profil, a odjava briše spremljenu sesiju i zadržava račun za sljedeću prijavu.
+
+## Testni računi i lista korisnika
+
+| Uloga | E-pošta | Lozinka |
+| --- | --- | --- |
+| Sportaš | `sportas@squadsync.hr` | `Sportas123!` |
+| Trener | `trener@squadsync.hr` | `Trener123!` |
+
+`DemoAccounts.users` definira početnu listu. `LocalAuthDataSource` dohvaća `List<LocalAccount>` preko sučelja `LocalAccountStore`, traži korisnika po e-pošti te uspoređuje hash unesene lozinke. Registracija dodaje zapis u listu, a dohvat profila iz sesije traži korisnika u toj istoj listi po ID-u i provjerava token.
+
+`EncryptedAccountStore` sprema cijelu listu u šifriranu lokalnu datoteku, tako da se novoregistrirani korisnik može odjaviti, ponovno pokrenuti aplikaciju i prijaviti istim podacima. Nedostajući testni računi dodaju se i postojećim instalacijama; postojeći zapisi s istom e-poštom, njihove lozinke, profili i tokeni ostaju sačuvani.
 
 ## MVVM slojevi
 
@@ -10,7 +21,7 @@ SquadSync trenutačno koristi lokalnu autentifikaciju. Računi postoje samo u ov
 | `domain/auth` | Modeli korisnika i sesije, tipizirane uloge i pogreške, sučelje `AuthRepository` i stanja prijave. Bez Android ovisnosti. |
 | `domain/validation` | Provjera e-pošte, obaveznih polja, lozinke, potvrde lozinke i uloge. |
 | `data/auth` | `DefaultAuthRepository` upravlja životnim ciklusom sesije. `AuthDataSource` definira ugovor za autentifikaciju i dohvat profila, a `SessionStore` za trajnu pohranu sesije. |
-| `data/local` | Lokalni adapter za račune, hashiranje lozinki, JSON mapiranje i šifrirana pohrana. |
+| `data/local` | Početni testni računi, lokalna lista korisnika preko `LocalAccountStore`, adapter za autentifikaciju, hashiranje lozinki, JSON mapiranje i šifrirana pohrana. |
 | `di` | `AppContainer` povezuje jednu instancu repozitorija za cijelu aplikaciju. |
 
 Smjer ovisnosti je `UI → ViewModel → AuthRepository ← DefaultAuthRepository → AuthDataSource / SessionStore`. UI ne poznaje lokalne datoteke ni budući HTTP klijent. Stanje se prikuplja pomoću `collectAsStateWithLifecycle`, prema [Androidovim preporukama za arhitekturu](https://developer.android.com/topic/architecture/recommendations).
@@ -48,7 +59,7 @@ Lokalni adapter služi razvoju aplikacije. Poslužitelj pri integraciji treba bi
 .\gradlew.bat :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:assembleDebugAndroidTest
 ```
 
-Jedinični testovi pokrivaju validaciju, normalizaciju podataka, trajno spremanje kroz ugovor pohrane, dohvat profila nakon ponovnog stvaranja repozitorija, istek/opoziv, mrežne i diskovne pogreške, odjavu, hashiranje i ponašanje ViewModela pri ponovnom slanju.
+Jedinični testovi pokrivaju prijavu obaju testnih računa, dodavanje i ponovnu prijavu registriranog korisnika iz liste, nepoznatu e-poštu, pogrešnu lozinku, duplikate, očuvanje postojećih računa i dohvat izmijenjenog profila iz liste. Pokrivaju i validaciju, normalizaciju podataka, trajno spremanje kroz ugovor pohrane, dohvat profila nakon ponovnog stvaranja repozitorija, istek/opoziv, mrežne i diskovne pogreške, odjavu, hashiranje i ponašanje ViewModela pri ponovnom slanju.
 
 `SessionPersistenceTest` zahtijeva Android uređaj ili emulator. Provjerava stvarni Keystore i šifrirane datoteke, ponovnu prijavu, oštećenu sesiju, pogrešnu lozinku i duplikate računa. Za pokretanje na spojenom uređaju:
 

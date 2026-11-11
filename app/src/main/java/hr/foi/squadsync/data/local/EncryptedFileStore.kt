@@ -18,7 +18,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
-/** Atomic, encrypted app-private storage. noBackupFilesDir also excludes device transfer. */
 class EncryptedFileStore(
     context: Context,
     fileName: String,

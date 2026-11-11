@@ -82,7 +82,7 @@ Provjeri piše li **Gradle 9.6.0** i je li za **Daemon JVM** zadana verzija **25
 3. Klikni **Run**.
 4. Pričekaj da se aplikacija instalira i otvori.
 
-Ako se prikaže ekran **Prijava**, aplikacija je pokrenuta. Registriraj lokalni račun, provjeri profil i ponovno pokreni aplikaciju: spremljena prijava trebala bi se automatski učitati.
+Ako se prikaže ekran **Prijava**, aplikacija je pokrenuta. Prijavi se s `sportas@squadsync.hr` / `Sportas123!` ili `trener@squadsync.hr` / `Trener123!`, ili registriraj novi lokalni račun. Provjeri profil i ponovno pokreni aplikaciju: spremljena prijava trebala bi se automatski učitati.
 
 ## 7. Provjera izgradnje
 

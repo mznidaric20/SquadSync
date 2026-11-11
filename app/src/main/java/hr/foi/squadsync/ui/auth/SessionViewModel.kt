@@ -40,7 +40,6 @@ class SessionViewModel(
     fun signOut() = perform { repository.signOut() }
 
     private fun expireSession() {
-        // Do not skip expiry while a manual request is busy, or cancel it when session state changes.
         viewModelScope.launch {
             try {
                 repository.refreshSession()

@@ -4,6 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import hr.foi.squadsync.data.auth.DefaultAuthRepository
 import hr.foi.squadsync.data.local.EncryptedFileStore
+import hr.foi.squadsync.data.local.EncryptedAccountStore
 import hr.foi.squadsync.data.local.EncryptedSessionStore
 import hr.foi.squadsync.data.local.LocalAuthDataSource
 import hr.foi.squadsync.domain.auth.AuthError
@@ -26,7 +27,7 @@ class SessionPersistenceTest {
     private val request = RegistrationRequest("Luka", "Horvat", "luka@primjer.com", "Lozinka123", UserRole.ATHLETE)
     private fun accounts() = EncryptedFileStore(context, "${prefix}_accounts.enc")
     private fun session() = EncryptedFileStore(context, "${prefix}_session.enc")
-    private fun repository() = DefaultAuthRepository(LocalAuthDataSource(accounts()), EncryptedSessionStore(session()))
+    private fun repository() = DefaultAuthRepository(LocalAuthDataSource(EncryptedAccountStore(accounts())), EncryptedSessionStore(session()))
 
     @After fun cleanUp() = runBlocking {
         accounts().clear()

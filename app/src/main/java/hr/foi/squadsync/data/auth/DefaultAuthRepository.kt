@@ -69,7 +69,6 @@ class DefaultAuthRepository(
 
     override suspend fun signOut() = mutex.withLock {
         val current = (_sessionState.value as? SessionState.Authenticated)?.session
-        // Local removal must succeed before reporting a successful sign-out.
         sessionStore.clear()
         _sessionState.value = SessionState.SignedOut
         if (current != null) {
