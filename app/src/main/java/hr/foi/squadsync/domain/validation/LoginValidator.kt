@@ -1,9 +1,11 @@
-package hr.foi.squadsync
+package hr.foi.squadsync.domain.validation
 
 data class LoginErrors(
     val email: String? = null,
     val lozinka: String? = null
-)
+) {
+    val hasErrors: Boolean get() = email != null || lozinka != null
+}
 
 object LoginValidator {
 

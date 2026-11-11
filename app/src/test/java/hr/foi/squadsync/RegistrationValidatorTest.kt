@@ -1,5 +1,8 @@
 package hr.foi.squadsync
 
+import hr.foi.squadsync.domain.validation.RegistrationErrors
+import hr.foi.squadsync.domain.validation.RegistrationValidator
+
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
