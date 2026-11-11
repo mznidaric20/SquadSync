@@ -35,11 +35,13 @@ fun RegistrationScreen(
     onLoginClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    AuthLayout(true, onLoginClick, onRegistration = {}, modifier, navigationEnabled = !state.isSubmitting) {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(stringResource(R.string.create_account_title), style = MaterialTheme.typography.headlineMedium)
-            Text(stringResource(R.string.registration_description), style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
+    AuthLayout(true, onLoginClick, onRegistration = {}, modifier, navigationEnabled = !state.isSubmitting) { compact ->
+        if (!compact) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(stringResource(R.string.create_account_title), style = MaterialTheme.typography.headlineMedium)
+                Text(stringResource(R.string.registration_description), style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
         BoxWithConstraints {
             val firstName: @Composable (Modifier) -> Unit = { fieldModifier ->
@@ -80,11 +82,13 @@ fun RegistrationScreen(
         state.error?.let { AuthErrorMessage(it) }
         AuthSubmitButton(stringResource(R.string.sign_up), stringResource(R.string.signing_up),
             state.isSubmitting, onSubmit, Modifier.testTag("register_submit"))
-        Text(stringResource(R.string.required_fields_hint), style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
-        SessionHint()
-        TextButton(onLoginClick, enabled = !state.isSubmitting, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-            Text(stringResource(R.string.has_account) + " " + stringResource(R.string.sign_in))
+        if (!compact) {
+            Text(stringResource(R.string.required_fields_hint), style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            SessionHint()
+            TextButton(onLoginClick, enabled = !state.isSubmitting, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                Text(stringResource(R.string.has_account) + " " + stringResource(R.string.sign_in))
+            }
         }
     }
 }

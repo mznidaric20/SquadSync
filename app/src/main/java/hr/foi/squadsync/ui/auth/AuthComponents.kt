@@ -1,10 +1,14 @@
 package hr.foi.squadsync.ui.auth
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -25,6 +30,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -41,6 +47,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hr.foi.squadsync.R
@@ -49,6 +58,9 @@ import hr.foi.squadsync.ui.theme.SquadBlue
 import hr.foi.squadsync.ui.theme.SquadCyan
 import hr.foi.squadsync.ui.theme.SquadNavy
 
+private val LocalAuthLayoutVersion = compositionLocalOf { 0 }
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun AuthLayout(
     registration: Boolean,
@@ -56,23 +68,31 @@ internal fun AuthLayout(
     onRegistration: () -> Unit,
     modifier: Modifier = Modifier,
     navigationEnabled: Boolean = true,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.(compact: Boolean) -> Unit
 ) {
-    BoxWithConstraints(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).imePadding()) {
+    val compact = WindowInsets.isImeVisible
+    var layoutVersion by remember { mutableIntStateOf(0) }
+    BoxWithConstraints(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+        .statusBarsPadding().imePadding()) {
         val wide = maxWidth >= 840.dp
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).navigationBarsPadding(),
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            if (wide) {
-                Row(Modifier.widthIn(max = 1120.dp).fillMaxWidth().statusBarsPadding().padding(32.dp),
-                    horizontalArrangement = Arrangement.spacedBy(28.dp), verticalAlignment = Alignment.Top) {
-                    AuthHero(registration, Modifier.weight(1f).clip(RoundedCornerShape(28.dp)), wide = true)
-                    AuthFormPanel(registration, onLogin, onRegistration, navigationEnabled,
-                        Modifier.weight(1f), content)
+        CompositionLocalProvider(LocalAuthLayoutVersion provides layoutVersion) {
+            Column(Modifier.fillMaxSize().navigationBarsPadding().verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                if (wide) {
+                    Row(Modifier.widthIn(max = 1120.dp).fillMaxWidth()
+                        .padding(horizontal = 32.dp, vertical = if (compact) 16.dp else 32.dp),
+                        horizontalArrangement = Arrangement.spacedBy(28.dp), verticalAlignment = Alignment.Top) {
+                        AuthHero(registration, Modifier.weight(1f).clip(RoundedCornerShape(28.dp)),
+                            wide = true, compact = compact, onResizeFinished = { layoutVersion++ })
+                        AuthFormPanel(registration, onLogin, onRegistration, navigationEnabled, compact,
+                            Modifier.weight(1f), content)
+                    }
+                } else {
+                    AuthHero(registration, Modifier.fillMaxWidth(), compact = compact,
+                        onResizeFinished = { layoutVersion++ })
+                    AuthFormPanel(registration, onLogin, onRegistration, navigationEnabled, compact,
+                        Modifier.fillMaxWidth().offset(y = if (compact) 0.dp else (-24).dp), content)
                 }
-            } else {
-                AuthHero(registration, Modifier.fillMaxWidth())
-                AuthFormPanel(registration, onLogin, onRegistration, navigationEnabled,
-                    Modifier.fillMaxWidth().offset(y = (-24).dp), content)
             }
         }
     }
@@ -84,46 +104,58 @@ private fun AuthFormPanel(
     onLogin: () -> Unit,
     onRegistration: () -> Unit,
     navigationEnabled: Boolean,
+    compact: Boolean,
     modifier: Modifier,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.(compact: Boolean) -> Unit
 ) {
-    Surface(modifier, shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surface) {
-        Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+    Surface(modifier, shape = RoundedCornerShape(if (compact) 20.dp else 28.dp), color = MaterialTheme.colorScheme.surface) {
+        Column(Modifier.padding(horizontal = 24.dp, vertical = if (compact) 16.dp else 24.dp),
+            verticalArrangement = Arrangement.spacedBy(if (compact) 12.dp else 18.dp)) {
             AuthTabs(registration, onLogin, onRegistration, navigationEnabled)
-            content()
+            content(compact)
         }
     }
 }
 
 @Composable
-private fun AuthHero(registration: Boolean, modifier: Modifier = Modifier, wide: Boolean = false) {
-    Box(modifier.background(Brush.linearGradient(listOf(SquadNavy, Color(0xFF0E3670))))) {
+private fun AuthHero(
+    registration: Boolean,
+    modifier: Modifier = Modifier,
+    wide: Boolean = false,
+    compact: Boolean = false,
+    onResizeFinished: () -> Unit
+) {
+    Box(modifier.animateContentSize(animationSpec = tween(180),
+        finishedListener = { _, _ -> onResizeFinished() })
+        .background(Brush.linearGradient(listOf(SquadNavy, Color(0xFF0E3670))))) {
         CourtArtwork(Modifier.matchParentSize())
-        Column(Modifier.then(if (wide) Modifier else Modifier.statusBarsPadding())
-            .padding(start = 24.dp, top = 20.dp, end = 24.dp, bottom = 48.dp)) {
-            SquadBrand()
-            Spacer(Modifier.height(if (wide) 88.dp else 24.dp))
-            Text(stringResource(if (registration) R.string.register_eyebrow else R.string.login_eyebrow),
-                style = MaterialTheme.typography.labelSmall, color = SquadCyan)
-            Spacer(Modifier.height(12.dp))
-            Text(stringResource(if (registration) R.string.register_hero_title else R.string.login_hero_title),
-                style = if (registration) MaterialTheme.typography.headlineMedium else
-                    MaterialTheme.typography.displaySmall.copy(fontSize = 32.sp, lineHeight = 36.sp),
-                color = Color.White)
-            if (wide) {
+        Column(Modifier.padding(horizontal = 24.dp).padding(
+            top = if (compact) 12.dp else 20.dp, bottom = if (compact) 12.dp else 48.dp)) {
+            SquadBrand(compact = compact)
+            if (!compact) {
+                Spacer(Modifier.height(if (wide) 88.dp else 24.dp))
+                Text(stringResource(if (registration) R.string.register_eyebrow else R.string.login_eyebrow),
+                    style = MaterialTheme.typography.labelSmall, color = SquadCyan)
                 Spacer(Modifier.height(12.dp))
-                Text(stringResource(if (registration) R.string.register_hero_description else R.string.login_hero_description),
-                    style = MaterialTheme.typography.bodyMedium, color = Color(0xFFBECEE6),
-                    modifier = Modifier.widthIn(max = 300.dp))
-            }
-            if (!registration && wide) {
-                Spacer(Modifier.height(64.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                    listOf(R.string.sport_training, R.string.sport_connect, R.string.sport_progress).forEach { text ->
-                        Text(stringResource(text), color = Color(0xFFD8E9FF),
-                            style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.background(Color.White.copy(alpha = 0.08f), RoundedCornerShape(8.dp))
-                                .padding(horizontal = 10.dp, vertical = 7.dp))
+                Text(stringResource(if (registration) R.string.register_hero_title else R.string.login_hero_title),
+                    style = if (registration) MaterialTheme.typography.headlineMedium else
+                        MaterialTheme.typography.displaySmall.copy(fontSize = 32.sp, lineHeight = 36.sp),
+                    color = Color.White)
+                if (wide) {
+                    Spacer(Modifier.height(12.dp))
+                    Text(stringResource(if (registration) R.string.register_hero_description else R.string.login_hero_description),
+                        style = MaterialTheme.typography.bodyMedium, color = Color(0xFFBECEE6),
+                        modifier = Modifier.widthIn(max = 300.dp))
+                }
+                if (!registration && wide) {
+                    Spacer(Modifier.height(64.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                        listOf(R.string.sport_training, R.string.sport_connect, R.string.sport_progress).forEach { text ->
+                            Text(stringResource(text), color = Color(0xFFD8E9FF),
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier.background(Color.White.copy(alpha = 0.08f), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 10.dp, vertical = 7.dp))
+                        }
                     }
                 }
             }
@@ -132,9 +164,10 @@ private fun AuthHero(registration: Boolean, modifier: Modifier = Modifier, wide:
 }
 
 @Composable
-internal fun SquadBrand(modifier: Modifier = Modifier) {
+internal fun SquadBrand(modifier: Modifier = Modifier, compact: Boolean = false) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(11.dp)) {
-        Canvas(Modifier.size(43.dp).background(SquadBlue, RoundedCornerShape(13.dp)).padding(10.dp)) {
+        Canvas(Modifier.size(if (compact) 34.dp else 43.dp)
+            .background(SquadBlue, RoundedCornerShape(if (compact) 10.dp else 13.dp)).padding(if (compact) 8.dp else 10.dp)) {
             val w = size.width
             val h = size.height
             listOf(0.1f to 0.38f, 0.38f to 0.66f, 0.66f to 0.94f).forEachIndexed { index, (start, end) ->
@@ -145,9 +178,12 @@ internal fun SquadBrand(modifier: Modifier = Modifier) {
         }
         Column {
             Text(stringResource(R.string.app_name), color = Color.White,
-                style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
-            Text(stringResource(R.string.brand_tagline), color = Color(0xFF9BB3D6), fontSize = 8.sp,
-                letterSpacing = 2.sp, fontWeight = FontWeight.Bold)
+                style = if (compact) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.ExtraBold)
+            if (!compact) {
+                Text(stringResource(R.string.brand_tagline), color = Color(0xFF9BB3D6), fontSize = 8.sp,
+                    letterSpacing = 2.sp, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }
@@ -206,6 +242,7 @@ private fun AuthTabs(registration: Boolean, onLogin: () -> Unit, onRegistration:
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun AuthField(
     label: String,
@@ -222,12 +259,28 @@ internal fun AuthField(
     onDone: () -> Unit = {}
 ) {
     var visible by remember { mutableStateOf(false) }
+    var isFocused by remember { mutableStateOf(false) }
+    var fieldSize by remember { mutableStateOf(IntSize.Zero) }
+    val bringIntoView = remember { BringIntoViewRequester() }
+    val density = LocalDensity.current
+    val imeBottom = WindowInsets.ime.getBottom(density)
+    val imeVisible = WindowInsets.isImeVisible
+    val layoutVersion = LocalAuthLayoutVersion.current
+    val margin = with(density) { 12.dp.toPx() }
     val focus = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
-    Column(modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(7.dp)) {
+    LaunchedEffect(isFocused, imeBottom, imeVisible, layoutVersion, fieldSize, error) {
+        if (isFocused && imeVisible && fieldSize != IntSize.Zero) {
+            withFrameNanos { }
+            bringIntoView.bringIntoView(Rect(0f, -margin, fieldSize.width.toFloat(), fieldSize.height + margin))
+        }
+    }
+    Column(modifier.bringIntoViewRequester(bringIntoView).onSizeChanged { fieldSize = it }
+        .semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
         OutlinedTextField(value = value, onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth().semantics { contentDescription = label },
+            modifier = Modifier.fillMaxWidth().onFocusChanged { isFocused = it.isFocused }
+                .semantics { contentDescription = label },
             singleLine = true, enabled = enabled, isError = error != null,
             textStyle = MaterialTheme.typography.bodyLarge,
             shape = RoundedCornerShape(14.dp),
