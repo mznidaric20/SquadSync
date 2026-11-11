@@ -1,4 +1,15 @@
-package hr.foi.squadsync
+package hr.foi.squadsync.domain.validation
+
+data class RegistrationErrors(
+    val ime: String? = null,
+    val prezime: String? = null,
+    val email: String? = null,
+    val lozinka: String? = null,
+    val potvrdaLozinke: String? = null,
+    val uloga: String? = null
+) {
+    val hasErrors: Boolean get() = listOf(ime, prezime, email, lozinka, potvrdaLozinke, uloga).any { it != null }
+}
 
 object RegistrationValidator {
 

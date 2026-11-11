@@ -8,7 +8,20 @@ Projekt razvija tim **CodeNova** u sklopu kolegija **Analiza i razvoj programa (
 
 ## Trenutačno stanje
 
-Projekt je još u početnoj fazi razvoja. Na GitHubu se trenutačno nalazi osnovna Android aplikacija koja nakon pokretanja prikazuje **Hello Android!**. Opisane mogućnosti za trenere i sportaše zasad su planirane, a ne dovršene.
+Projekt je u početnoj fazi razvoja. Implementirani su plavi sportski ekrani za **prijavu i registraciju**, izbor uloge sportaša ili trenera te korisnički profil. Prijava se pamti između pokretanja aplikacije, a spremljena sesija koristi se za dohvat profila.
+
+Autentifikacija trenutačno radi **lokalno na uređaju**. Prijava dohvaća korisnika iz lokalne liste, a registracija dodaje novi račun u istu listu. Lista računa i sesija ostaju spremljene između pokretanja aplikacije; lozinke se spremaju samo kao posoljeni hash. Organizacija treninga i ostale sportske mogućnosti još su planirane.
+
+Za isprobavanje prijave dostupni su testni računi:
+
+| Uloga | E-pošta | Lozinka |
+| --- | --- | --- |
+| Sportaš | `sportas@squadsync.hr` | `Sportas123!` |
+| Trener | `trener@squadsync.hr` | `Trener123!` |
+
+Početna lista definirana je u `data/local/DemoAccounts.kt`. Testni računi automatski se dodaju ako njihova e-pošta još ne postoji, bez prepisivanja registriranih korisnika.
+
+Kod je razdvojen u MVVM slojeve (`ui`, `domain`, `data`) uz ručno povezivanje ovisnosti u `di`. Lokalni izvor autentifikacije može se zamijeniti implementacijom za backend. Detalji su u [docs/AUTHENTICATION.md](docs/AUTHENTICATION.md).
 
 ## Tehnologije
 
@@ -37,7 +50,7 @@ cd SquadSync
 5. Pričekaj da završi **Gradle Sync**.
 6. Pokreni Android emulator s **API-jem 28 ili novijim**, odaberi konfiguraciju **app** i klikni **Run**.
 
-Ako se prikaže **Hello Android!**, početna aplikacija je pokrenuta.
+Pri prvom pokretanju prikazuje se **Prijava**. Prijavi se testnim računom iz gornje tablice ili odaberi **Registracija** i kreiraj novi račun. Nakon toga prikazuje se profil, a pri ponovnom pokretanju učitava se spremljena prijava.
 
 Detaljnije upute nalaze se u datoteci [docs/SETUP.md](docs/SETUP.md).
 
