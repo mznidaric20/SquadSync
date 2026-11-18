@@ -10,9 +10,15 @@ data class TeamMember(
     val initials: String get() = firstName.take(1) + lastName.take(1)
 }
 
-data class TeamRoster(
+data class Team(
     val id: String,
     val name: String,
     val sport: String,
+    val coachId: String,
+    val memberCount: Int
+)
+
+data class TeamRoster(
+    val team: Team,
     val members: List<TeamMember>
 )

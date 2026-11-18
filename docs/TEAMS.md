@@ -1,30 +1,54 @@
-# Momčadi i članovi – prvi subtask
+# Momčadi i članovi – ekran i lokalni dohvat uz ovlasti
 
-Implementiran je subtask **Izrada ekrana s popisom članova, uključujući poruku za praznu momčad**. Druga skica (`momcadi.png`) služi kao osnova, uz plavi sportski stil postojeće aplikacije.
+Implementirani su ekran s popisom članova i porukom za praznu momčad te **lokalni dohvat članova uz provjeru ovlasti**. Druga skica (`momcadi.png`) služi kao osnova, uz plavi sportski stil postojeće aplikacije. Komunikacija s backendom još nije uvedena.
 
 ## Otvaranje ekrana
 
 Prijavi se kao trener (`trener@squadsync.hr` / `Trener123!`), zatim na profilu odaberi **Moje momčadi**. Strelica na zaglavlju ili sistemska tipka Natrag vraćaju na profil.
 
-Padajući izbornik sadrži dvije ogledne momčadi:
+Testni trener dobiva dvije ogledne momčadi:
 
 - **Seniori** – četiri sportaša s imenom, prezimenom, e-poštom i oznakom uloge.
 - **Juniori** – prazna momčad koja prikazuje poruku da još nema članova.
 
-Prikaz podržava i stanje bez ijedne momčadi. Popis članova skrola se i koristi stabilne identifikatore. Previews za popunjenu i praznu momčad, stanje bez momčadi, širi ekran i tamnu temu nalaze se uz `TeamsScreen`.
+Pri prvom dohvatu momčadi se povezuju sa stvarnim ID-em već spremljenog računa `trener@squadsync.hr`. Katalog se sprema u `teams.enc` preko postojeće AES-GCM pohrane u `noBackupFilesDir`. Postojeći katalog se ne prepisuje niti se vlasništvo mijenja prema korisniku koji trenutno traži podatke. Ogledni sportaši nisu povezani s registriranim računima.
+
+Novi registrirani trener dobiva prazan popis jer mu još nije dodijeljena momčad. Prazna momčad i trener bez momčadi imaju odvojene poruke. Ekran također prikazuje učitavanje, pogrešku i ponovni pokušaj. Osvježavanje je dostupno uz naslov popisa članova.
 
 ## Organizacija koda
 
-- `domain/teams/TeamModels.kt` – modeli momčadi i članova, bez Android ovisnosti.
-- `ui/teams/TeamsViewModel.kt` – nepromjenjivi `StateFlow` stanja ekrana i odabir momčadi. `SavedStateHandle` čuva identifikator odabrane momčadi za obnovu stanja.
-- `ui/teams/TeamsScreen.kt` – prikaz i callbackovi, bez pristupa pohrani ili mreži.
-- `ui/teams/TeamsRoute.kt` – povezivanje ViewModela s ekranom; ViewModel je odvojen ključem prijavljenog korisnika.
-- `ui/teams/demo/DemoTeamRosters.kt` – ogledni podaci samo za prikaz prvog subtaska.
+- `domain/teams/TeamModels.kt` – `Team` s vlasnikom i brojem članova, `TeamMember` i zasebni `TeamRoster`.
+- `domain/teams/TeamRepository.kt` – ugovor `getMyTeams()` / `getRoster(teamId)` i tipizirane pogreške.
+- `data/teams/DefaultTeamRepository.kt` – provjera aktualne sesije, uloge i pripadnosti momčadi.
+- `data/teams/TeamDataSource.kt` – zamjenjivi izvor podataka koji dobiva provjerenu sesiju za buduće autentificirane HTTP zahtjeve.
+- `data/teams/local/LocalTeamDataSource.kt` – dohvat iz lokalnog kataloga i inicijalno povezivanje oglednih momčadi s postojećim testnim trenerom.
+- `data/teams/local/TeamStore.kt` i `EncryptedTeamStore.kt` – ugovor pohrane i JSON zapis šifriranih momčadi, članova i vlasnika.
+- `data/teams/local/DemoTeamCatalog.kt` – početni sadržaj kataloga; koristi se i za Compose previews.
+- `ui/teams/TeamsViewModel.kt` – asinkrono učitavanje kroz repozitorij, odabir momčadi, otkazivanje prethodnog zahtjeva i stanja učitavanja/pogreške. `SavedStateHandle` čuva samo odabrani ID.
+- `ui/teams/TeamsScreen.kt` – prikaz i callbackovi, bez izravnog pristupa pohrani ili mreži.
+- `ui/teams/TeamsRoute.kt` – povezivanje ekrana i ViewModela. Pri povratku u vidljivo stanje ponovno se provjeravaju podaci; pri izlasku ili odlasku u pozadinu zahtjev se otkazuje i popis briše iz UI stanja.
+- `di/AppContainer.kt` – zajedničke instance auth i team repozitorija, pohrane i lokalnog izvora.
 
-Ogledni sportaši nisu povezani s registriranim računima. Podaci se ne dohvaćaju s backenda i ne spremaju u listu računa. Kasnije se stvarni podaci mogu mapirati u iste modele i predavati stanju ekrana.
+Tok podataka je `TeamsScreen → TeamsViewModel → TeamRepository → TeamDataSource → TeamStore`.
 
-## Preostali subtaskovi
+## Provjera ovlasti
 
-**Dohvat članova momčadi uz provjeru ovlasti** još nije implementiran. Prikaz gumba prema ulozi trenera dio je navigacije; ne predstavlja provjeru ovlasti nad konkretnom momčadi. Pristup stvarnim momčadima mora se provjeravati u budućem podatkovnom/backend sloju.
+Identitet se uzima isključivo iz `AuthRepository`; pozivatelj repozitoriju ne šalje ID trenera. Za svaki dohvat potrebna je aktivna, neistekla sesija s tokenom i ulogom `COACH`. Repozitorij osvježava prijavu kroz postojeći auth sloj kako bi provjerio aktualne podatke računa i token.
 
-**Testiranje** ostaje zaseban subtask. U ovoj izmjeni provjeravaju se kompilacija i Android lint; nisu dodani testovi korisničke priče niti je implementirana početna trenerska nadzorna ploča, kreiranje momčadi ili dodavanje članova.
+`getMyTeams()` vraća samo momčadi čiji se `coachId` poklapa s ID-em prijavljenog korisnika. `getRoster(teamId)` prvo dohvaća metapodatke i provjerava vlasništvo, a tek zatim traži članove. Lokalni izvor dodatno provjerava vlasništvo pri samom čitanju članova.
+
+Prije vraćanja rezultata ponovno se provjeravaju sesija, token, uloga i istek. Odjava, promjena korisnika ili istek tijekom zahtjeva ne mogu vratiti članove prethodnog korisnika. Pogreške ovlasti čiste prethodno prikazani popis.
+
+## Budući backend
+
+U `AppContainer` zamijeni `LocalTeamDataSource` implementacijom `TeamDataSource` koja šalje `session.accessToken` backendu i mapira odgovor na iste domenske modele. Poslužitelj mora sam provjeravati identitet, ulogu i ovlasti nad momčadi; lokalna provjera nije zamjena za poslužiteljsku autorizaciju. Ekran i ViewModel ostaju povezani s istim sučeljem `TeamRepository`.
+
+## Provjera implementacije
+
+Dodane su ciljane jedinične provjere repozitorija, lokalnog izvora i asinkronog UI stanja: vlastita i tuđa momčad, sportaš, nedostatak/istek sesije, odjava i promjena korisnika tijekom zahtjeva, trajna pripadnost kataloga te uklanjanje zastarjelog popisa.
+
+```powershell
+.\gradlew.bat :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
+```
+
+Šire testiranje korisničke priče na emulatoru/uređaju i integracija s budućim backendom ostaju za zasebni subtask testiranja. Početna trenerska nadzorna ploča, kreiranje momčadi i dodavanje članova nisu dio ove izmjene.

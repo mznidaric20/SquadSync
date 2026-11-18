@@ -27,11 +27,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hr.foi.squadsync.R
 import hr.foi.squadsync.domain.teams.TeamMember
-import hr.foi.squadsync.domain.teams.TeamRoster
+import hr.foi.squadsync.domain.teams.Team
+import hr.foi.squadsync.domain.teams.TeamError
 import hr.foi.squadsync.ui.auth.AuthIcon
 import hr.foi.squadsync.ui.auth.CourtArtwork
 import hr.foi.squadsync.ui.auth.SquadBrand
-import hr.foi.squadsync.ui.teams.demo.DemoTeamRosters
+import hr.foi.squadsync.data.teams.local.DemoTeamCatalog
 import hr.foi.squadsync.ui.theme.SquadCyan
 import hr.foi.squadsync.ui.theme.SquadNavy
 import hr.foi.squadsync.ui.theme.SquadSyncTheme
@@ -41,7 +42,8 @@ fun TeamsScreen(
     state: TeamsUiState,
     onTeamSelect: (String) -> Unit,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onReload: () -> Unit = {}
 ) {
     val selectedTeam = state.selectedTeam
     Scaffold(
@@ -56,16 +58,31 @@ fun TeamsScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item(key = "intro") { TeamsIntro(isDemo = state.isDemo) }
-            if (selectedTeam != null) {
+            if (state.isLoading) {
+                item(key = "loading_teams") {
+                    TeamsLoadingState(stringResource(R.string.teams_loading),
+                        Modifier.widthIn(max = 680.dp).fillMaxWidth().padding(20.dp))
+                }
+            } else if (selectedTeam != null) {
                 item(key = "selector") {
                     TeamSelector(state.teams, selectedTeam, onTeamSelect,
                         Modifier.widthIn(max = 680.dp).fillMaxWidth().padding(horizontal = 20.dp, vertical = 20.dp))
                 }
                 item(key = "members_heading") {
-                    RosterHeading(selectedTeam,
+                    RosterHeading(selectedTeam, onReload, !state.isLoadingMembers,
                         Modifier.widthIn(max = 680.dp).fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 16.dp))
                 }
-                if (selectedTeam.members.isEmpty()) {
+                if (state.isLoadingMembers) {
+                    item(key = "loading_members") {
+                        TeamsLoadingState(stringResource(R.string.teams_members_loading),
+                            Modifier.widthIn(max = 680.dp).fillMaxWidth().padding(horizontal = 20.dp))
+                    }
+                } else if (state.error != null) {
+                    item(key = "roster_error") {
+                        TeamsErrorState(state.error, onReload,
+                            Modifier.widthIn(max = 680.dp).fillMaxWidth().padding(horizontal = 20.dp))
+                    }
+                } else if (state.members.isEmpty()) {
                     item(key = "empty_roster_${selectedTeam.id}") {
                         TeamsEmptyState(
                             title = stringResource(R.string.teams_empty_title),
@@ -75,10 +92,15 @@ fun TeamsScreen(
                         )
                     }
                 } else {
-                    items(selectedTeam.members, key = { "${selectedTeam.id}_${it.id}" }) { member ->
+                    items(state.members, key = { "${selectedTeam.id}_${it.id}" }) { member ->
                         MemberCard(member, Modifier.widthIn(max = 680.dp).fillMaxWidth()
                             .padding(horizontal = 20.dp).padding(bottom = 10.dp))
                     }
+                }
+            } else if (state.error != null) {
+                item(key = "teams_error") {
+                    TeamsErrorState(state.error, onReload,
+                        Modifier.widthIn(max = 680.dp).fillMaxWidth().padding(20.dp))
                 }
             } else {
                 item(key = "no_teams") {
@@ -148,7 +170,7 @@ private fun TeamsIntro(isDemo: Boolean) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TeamSelector(teams: List<TeamRoster>, selectedTeam: TeamRoster, onSelect: (String) -> Unit, modifier: Modifier) {
+private fun TeamSelector(teams: List<Team>, selectedTeam: Team, onSelect: (String) -> Unit, modifier: Modifier) {
     var expanded by remember { mutableStateOf(false) }
     Surface(modifier, shape = RoundedCornerShape(24.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), shadowElevation = 1.dp) {
@@ -177,7 +199,7 @@ private fun TeamSelector(teams: List<TeamRoster>, selectedTeam: TeamRoster, onSe
                             text = {
                                 Column {
                                     Text(team.name, style = MaterialTheme.typography.titleMedium)
-                                    Text(stringResource(R.string.teams_members_count, team.members.size),
+                                    Text(stringResource(R.string.teams_members_count, team.memberCount),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
@@ -197,7 +219,7 @@ private fun TeamSelector(teams: List<TeamRoster>, selectedTeam: TeamRoster, onSe
                 Text(selectedTeam.sport, style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
                 Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(8.dp)) {
-                    Text(stringResource(R.string.teams_members_count, selectedTeam.members.size),
+                    Text(stringResource(R.string.teams_members_count, selectedTeam.memberCount),
                         style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
                 }
@@ -207,12 +229,18 @@ private fun TeamSelector(teams: List<TeamRoster>, selectedTeam: TeamRoster, onSe
 }
 
 @Composable
-private fun RosterHeading(team: TeamRoster, modifier: Modifier) {
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(5.dp)) {
-        Text(stringResource(R.string.teams_members_heading), style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.semantics { heading() })
-        Text(stringResource(R.string.teams_roster_description, team.name), style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun RosterHeading(team: Team, onReload: () -> Unit, enabled: Boolean, modifier: Modifier) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Text(stringResource(R.string.teams_members_heading), style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.semantics { heading() })
+            Text(stringResource(R.string.teams_roster_description, team.name), style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        IconButton(onClick = onReload, enabled = enabled) {
+            Icon(painterResource(R.drawable.ic_refresh), contentDescription = stringResource(R.string.teams_refresh),
+                tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+        }
     }
 }
 
@@ -240,6 +268,45 @@ private fun MemberCard(member: TeamMember, modifier: Modifier) {
 }
 
 @Composable
+private fun TeamsLoadingState(message: String, modifier: Modifier) {
+    Surface(modifier.testTag("teams_loading"), shape = RoundedCornerShape(24.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+        Column(Modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 2.dp)
+            Text(message, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun TeamsErrorState(error: TeamError, onRetry: () -> Unit, modifier: Modifier) {
+    val description = when (error) {
+        TeamError.SESSION_REQUIRED -> R.string.teams_session_required
+        TeamError.ACCESS_DENIED -> R.string.teams_access_denied
+        TeamError.NOT_FOUND -> R.string.teams_not_found
+        TeamError.DATA_UNAVAILABLE -> R.string.teams_data_unavailable
+    }
+    Surface(modifier.testTag("teams_error"), shape = RoundedCornerShape(24.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+        Column(Modifier.fillMaxWidth().padding(28.dp), horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            AuthIcon(R.drawable.ic_shield, tint = MaterialTheme.colorScheme.error)
+            Text(stringResource(R.string.teams_error_title), style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Center)
+            Text(stringResource(description), style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+            if (error == TeamError.DATA_UNAVAILABLE || error == TeamError.NOT_FOUND) {
+                Button(onClick = onRetry, shape = RoundedCornerShape(12.dp)) {
+                    Text(stringResource(R.string.retry))
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun TeamsEmptyState(title: String, description: String, modifier: Modifier) {
     Surface(modifier, shape = RoundedCornerShape(24.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
@@ -262,7 +329,7 @@ private fun TeamsEmptyState(title: String, description: String, modifier: Modifi
 @Composable
 private fun TeamsPreview() {
     SquadSyncTheme(darkTheme = false) {
-        TeamsScreen(TeamsUiState(DemoTeamRosters.teams, DemoTeamRosters.teams.first().id, isDemo = true), {}, {})
+        TeamsScreen(sampleTeamState(), {}, {})
     }
 }
 
@@ -270,7 +337,7 @@ private fun TeamsPreview() {
 @Composable
 private fun EmptyTeamPreview() {
     SquadSyncTheme(darkTheme = false) {
-        TeamsScreen(TeamsUiState(DemoTeamRosters.teams, DemoTeamRosters.teams.last().id, isDemo = true), {}, {})
+        TeamsScreen(sampleTeamState(index = 1), {}, {})
     }
 }
 
@@ -278,7 +345,7 @@ private fun EmptyTeamPreview() {
 @Composable
 private fun TeamsDarkPreview() {
     SquadSyncTheme(darkTheme = true) {
-        TeamsScreen(TeamsUiState(DemoTeamRosters.teams, DemoTeamRosters.teams.first().id, isDemo = true), {}, {})
+        TeamsScreen(sampleTeamState(), {}, {})
     }
 }
 
@@ -286,4 +353,22 @@ private fun TeamsDarkPreview() {
 @Composable
 private fun NoTeamsPreview() {
     SquadSyncTheme(darkTheme = false) { TeamsScreen(TeamsUiState(), {}, {}) }
+}
+
+private fun sampleTeamState(index: Int = 0): TeamsUiState {
+    val rosters = DemoTeamCatalog.create("preview-coach")
+    return TeamsUiState(teams = rosters.map { it.team }, selectedTeamId = rosters[index].team.id,
+        members = rosters[index].members, isDemo = true)
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 840)
+@Composable
+private fun TeamsLoadingPreview() {
+    SquadSyncTheme(darkTheme = false) { TeamsScreen(TeamsUiState(isLoading = true), {}, {}) }
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 840)
+@Composable
+private fun TeamsDeniedPreview() {
+    SquadSyncTheme(darkTheme = false) { TeamsScreen(TeamsUiState(error = TeamError.ACCESS_DENIED), {}, {}) }
 }

@@ -8,12 +8,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import hr.foi.squadsync.domain.auth.AuthRepository
 import hr.foi.squadsync.domain.auth.SessionState
 import hr.foi.squadsync.domain.auth.UserRole
+import hr.foi.squadsync.domain.teams.TeamRepository
 import hr.foi.squadsync.ui.teams.TeamsRoute
 
 private enum class AuthDestination { LOGIN, REGISTRATION }
 
 @Composable
-fun SquadSyncApp(repository: AuthRepository) {
+fun SquadSyncApp(repository: AuthRepository, teamRepository: TeamRepository) {
     val factory = remember(repository) { authViewModelFactory(repository) }
     val sessionViewModel: SessionViewModel = viewModel(factory = factory)
     val loginViewModel: LoginViewModel = viewModel(factory = factory)
@@ -53,7 +54,8 @@ fun SquadSyncApp(repository: AuthRepository) {
             val coach = current.session.user.role == UserRole.COACH
             if (coach && showTeams && teamsOwnerId == current.session.user.id) {
                 BackHandler { showTeams = false }
-                TeamsRoute(coachId = current.session.user.id, onBack = { showTeams = false })
+                TeamsRoute(coachId = current.session.user.id, repository = teamRepository,
+                    onBack = { showTeams = false })
             } else {
                 SessionScreen(current.session.user, sessionUi,
                     sessionViewModel::refresh, sessionViewModel::signOut,

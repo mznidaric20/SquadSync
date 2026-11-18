@@ -73,4 +73,12 @@
     <string name="teams_empty_description">Sastav je zasad prazan. Sportaši će se prikazati ovdje kada budu dodani u ovu momčad.</string>
     <string name="teams_none_title">Tvoja ekipa tek nastaje.</string>
     <string name="teams_none_description">Trenutačno nema momčadi za prikaz. Ovdje ćeš moći odabrati momčad i pregledati njezine članove.</string>
+    <string name="teams_loading">Učitavamo tvoje momčadi…</string>
+    <string name="teams_members_loading">Učitavamo članove momčadi…</string>
+    <string name="teams_refresh">Osvježi momčadi</string>
+    <string name="teams_error_title">Popis trenutačno nije dostupan.</string>
+    <string name="teams_session_required">Za pregled momčadi potrebna je važeća prijava.</string>
+    <string name="teams_access_denied">Nemaš ovlasti za pregled ove momčadi.</string>
+    <string name="teams_not_found">Odabrana momčad više nije dostupna. Osvježi popis i odaberi drugu momčad.</string>
+    <string name="teams_data_unavailable">Podatke o momčadima nije moguće učitati. Pokušaj ponovno.</string>
 </resources>
