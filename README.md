@@ -23,6 +23,8 @@ Početna lista definirana je u `data/local/DemoAccounts.kt`. Testni računi auto
 
 Kod je razdvojen u MVVM slojeve (`ui`, `domain`, `data`) uz ručno povezivanje ovisnosti u `di`. Lokalni izvor autentifikacije može se zamijeniti implementacijom za backend. Detalji su u [docs/AUTHENTICATION.md](docs/AUTHENTICATION.md).
 
+Trener na profilu može otvoriti **Moje momčadi**: ekran s odabirom momčadi, popisom sportaša i porukom za praznu momčad. To je prvi subtask pregleda sastava, s oglednim podacima; dohvat uz provjeru ovlasti i zasebni testovi još nisu implementirani. Detalji su u [docs/TEAMS.md](docs/TEAMS.md).
+
 ## Tehnologije
 
 - **Android Studio** – razvoj aplikacije

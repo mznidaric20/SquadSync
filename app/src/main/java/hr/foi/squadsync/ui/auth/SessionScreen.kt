@@ -26,7 +26,13 @@ import hr.foi.squadsync.ui.theme.SquadNavy
 import hr.foi.squadsync.ui.theme.SquadSyncTheme
 
 @Composable
-fun SessionScreen(user: UserProfile, state: SessionUiState, onRefresh: () -> Unit, onSignOut: () -> Unit) {
+fun SessionScreen(
+    user: UserProfile,
+    state: SessionUiState,
+    onRefresh: () -> Unit,
+    onSignOut: () -> Unit,
+    onTeamsClick: (() -> Unit)? = null
+) {
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
         .verticalScroll(rememberScrollState()).navigationBarsPadding(), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(Modifier.fillMaxWidth().background(Brush.linearGradient(listOf(SquadNavy, Color(0xFF0E3670))))) {
@@ -70,6 +76,15 @@ fun SessionScreen(user: UserProfile, state: SessionUiState, onRefresh: () -> Uni
                     Text(stringResource(R.string.session_saved), style = MaterialTheme.typography.labelLarge)
                 }
                 state.error?.let { AuthErrorMessage(it) }
+                if (user.role == UserRole.COACH && onTeamsClick != null) {
+                    Button(onTeamsClick, Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("open_teams"),
+                        enabled = !state.isBusy, shape = RoundedCornerShape(14.dp)) {
+                        AuthIcon(R.drawable.ic_team)
+                        Spacer(Modifier.width(10.dp))
+                        Text(stringResource(R.string.open_teams), modifier = Modifier.weight(1f))
+                        AuthIcon(R.drawable.ic_arrow)
+                    }
+                }
                 OutlinedButton(onRefresh, Modifier.fillMaxWidth().heightIn(min = 52.dp), enabled = !state.isBusy,
                     shape = RoundedCornerShape(14.dp)) {
                     if (state.isBusy) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
