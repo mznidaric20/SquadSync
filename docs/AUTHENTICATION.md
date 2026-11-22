@@ -1,6 +1,6 @@
 # Autentifikacija i sesija
 
-SquadSync trenutačno koristi lokalnu autentifikaciju. Računi postoje samo u ovoj instalaciji aplikacije, bez komunikacije s poslužiteljem. Prijava dohvaća korisnika iz lokalne liste i provjerava njegovu lozinku. Registracija dodaje novog korisnika u istu listu. Obje akcije otvaraju profil, a odjava briše spremljenu sesiju i zadržava račun za sljedeću prijavu.
+SquadSync ima dvije izvedbe autentifikacije. Ako su `SUPABASE_URL` i `SUPABASE_KEY` upisani u `local.properties`, koristi se Supabase (vidi odjeljak **Supabase**). Inače se koristi lokalna autentifikacija opisana u nastavku: računi postoje samo u ovoj instalaciji aplikacije, bez komunikacije s poslužiteljem. Prijava dohvaća korisnika iz lokalne liste i provjerava njegovu lozinku. Registracija dodaje novog korisnika u istu listu. Obje akcije otvaraju profil, a odjava briše spremljenu sesiju i zadržava račun za sljedeću prijavu.
 
 ## Testni računi i lista korisnika
 
@@ -45,6 +45,21 @@ Zajednički repozitorij serijalizira izmjene sesije pomoću `Mutex`. Forme tijek
 Obje datoteke koriste AES-256-GCM s novim IV-om pri svakom pisanju i ključem iz [Android Keystorea](https://developer.android.com/privacy-and-security/keystore). Pišu se preko `AtomicFile` u `noBackupFilesDir`, pa se autentifikacijski podaci ne prenose Android backupom. Operacije pohrane i hashiranja rade na IO dispatcheru. Ne sprema se izvorna lozinka.
 
 Lokalni adapter služi razvoju aplikacije. Poslužitelj pri integraciji treba biti odgovoran za provjeru lozinki, prava pristupa i izdavanje, osvježavanje i opoziv tokena.
+
+## Supabase
+
+`AppContainer` koristi `SupabaseAuthDataSource` kad `SupabaseProvider.isConfigured()` vrati `true`. Ostatak aplikacije (ViewModeli, `DefaultAuthRepository`, ekrani) se ne mijenja.
+
+| Datoteka (`data/remote`) | Uloga |
+| --- | --- |
+| `SupabaseProvider` | Provjerava postoje li ključevi i stvara Supabase klijent (Auth + Postgrest). |
+| `SupabaseAuthDataSource` | Registracija, prijava, odjava i dohvat profila iz tablice `korisnici`. |
+| `KorisnikRow` | Jedan red tablice `korisnici`. |
+| `SupabaseMapper` | Uloga ↔ `Trener`/`Sportaš`, Supabase kod greške → `AuthError`. |
+
+Registracija šalje `ime`, `prezime` i `uloga` kao metapodatke. Trigger u bazi iz njih stvara red u tablici `korisnici` (opis tablice, RLS i SQL su na Confluenceu, stranica *Tablica Korisnici*). Supabase sam sprema i obnavlja svoj token; sesija u aplikaciji traje 30 dana, kao i lokalna.
+
+Testni računi iz `DemoAccounts` postoje samo lokalno. Sa Supabaseom se prvo treba registrirati.
 
 ## Zamjena backendom
 
