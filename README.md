@@ -26,7 +26,7 @@ Kod je razdvojen u MVVM slojeve (`ui`, `domain`, `data`) uz ručno povezivanje o
 ## Tehnologije
 
 - **Android Studio** – razvoj aplikacije
-- **Kotlin 2.2.10** – programski jezik
+- **Kotlin 2.4.21** – programski jezik
 - **Jetpack Compose** – izrada korisničkog sučelja
 - **Android Gradle Plugin 9.5.1** i **Gradle 9.6.0** – izgradnja projekta
 - **Android SDK 37** – verzija za izgradnju aplikacije

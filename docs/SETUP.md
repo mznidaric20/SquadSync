@@ -17,7 +17,7 @@ Projekt koristi ove verzije:
 
 - **Gradle:** 9.6.0
 - **Android Gradle Plugin:** 9.5.1
-- **Kotlin:** 2.2.10
+- **Kotlin:** 2.4.21
 - **Jetpack Compose BOM:** 2026.02.01
 - **Gradle Daemon JDK:** 25
 - **Android SDK za izgradnju:** 37
@@ -105,6 +105,15 @@ Ako se pojavi **BUILD SUCCESSFUL**, izgradnja je uspjela.
 ## 8. Lokalne postavke
 
 Android Studio obično sam napravi datoteku **local.properties** s putanjom do Android SDK-a. Ako Android Studio ne pronalazi SDK, provjeri je li ispravno instaliran i postavljen.
+
+Za prijavu i registraciju preko Supabasea u **local.properties** dodaj:
+
+```properties
+SUPABASE_URL=https://<projekt>.supabase.co
+SUPABASE_KEY=<anon / publishable ključ>
+```
+
+Vrijednosti su u Supabaseu pod **Connect** ili **Project Settings → API Keys**. Koristi **anon (publishable)** ključ, nikad `service_role`. Nakon izmjene napravi **Gradle Sync**. Bez ovih vrijednosti aplikacija koristi lokalnu prijavu s testnim računima.
 
 **Datoteku **local.properties**, lozinke i API ključeve nemoj slati na GitHub.**
 
