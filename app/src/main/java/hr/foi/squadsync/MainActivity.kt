@@ -23,11 +23,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
-        val repository = (application as SquadSyncApplication).container.authRepository
+        val container = (application as SquadSyncApplication).container
+        val repository = container.authRepository
         setContent {
             SquadSyncTheme {
                 Box(Modifier.fillMaxSize()) {
-                    SquadSyncApp(repository)
+                    SquadSyncApp(repository, container.teamJoinRepository)
                     Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).background(SquadNavy))
                 }
             }

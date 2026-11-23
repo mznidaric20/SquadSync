@@ -21,12 +21,22 @@ import hr.foi.squadsync.R
 import hr.foi.squadsync.domain.auth.AuthError
 import hr.foi.squadsync.domain.auth.UserProfile
 import hr.foi.squadsync.domain.auth.UserRole
+import hr.foi.squadsync.ui.teams.JoinTeamSection
+import hr.foi.squadsync.ui.teams.JoinTeamUiState
 import hr.foi.squadsync.ui.theme.SquadCyan
 import hr.foi.squadsync.ui.theme.SquadNavy
 import hr.foi.squadsync.ui.theme.SquadSyncTheme
 
 @Composable
-fun SessionScreen(user: UserProfile, state: SessionUiState, onRefresh: () -> Unit, onSignOut: () -> Unit) {
+fun SessionScreen(
+    user: UserProfile,
+    state: SessionUiState,
+    onRefresh: () -> Unit,
+    onSignOut: () -> Unit,
+    joinTeamState: JoinTeamUiState,
+    onAccessCodeChange: (String) -> Unit,
+    onJoinTeam: () -> Unit
+) {
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
         .verticalScroll(rememberScrollState()).navigationBarsPadding(), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(Modifier.fillMaxWidth().background(Brush.linearGradient(listOf(SquadNavy, Color(0xFF0E3670))))) {
@@ -64,6 +74,12 @@ fun SessionScreen(user: UserProfile, state: SessionUiState, onRefresh: () -> Uni
                     Text(stringResource(R.string.email_label), style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(user.email, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.testTag("session_email"))
+                }
+                // Momcadi se pridruzuje samo sportas, trener ovaj dio ne vidi.
+                if (user.role == UserRole.ATHLETE) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    JoinTeamSection(joinTeamState, onAccessCodeChange, onJoinTeam)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     AuthIcon(R.drawable.ic_shield, tint = MaterialTheme.colorScheme.primary)
@@ -117,6 +133,7 @@ internal fun SessionRecoveryScreen(error: AuthError, state: SessionUiState, onRe
 @Composable
 private fun SessionPreview() {
     SquadSyncTheme(darkTheme = false) {
-        SessionScreen(UserProfile("1", "Luka", "Horvat", "luka@primjer.com", UserRole.ATHLETE), SessionUiState(), {}, {})
+        SessionScreen(UserProfile("1", "Luka", "Horvat", "luka@primjer.com", UserRole.ATHLETE), SessionUiState(), {}, {},
+            JoinTeamUiState(), {}, {})
     }
 }
