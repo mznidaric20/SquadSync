@@ -7,6 +7,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import hr.foi.squadsync.domain.auth.AuthRepository
 import hr.foi.squadsync.domain.auth.SessionState
+import hr.foi.squadsync.domain.auth.UserRole
+import hr.foi.squadsync.ui.teams.CreateTeamScreen
+
 
 private enum class AuthDestination { LOGIN, REGISTRATION }
 
@@ -21,6 +24,9 @@ fun SquadSyncApp(repository: AuthRepository) {
     val login by loginViewModel.uiState.collectAsStateWithLifecycle()
     val registration by registrationViewModel.uiState.collectAsStateWithLifecycle()
     var destination by rememberSaveable { mutableStateOf(AuthDestination.LOGIN) }
+    var showCreateTeam by rememberSaveable { mutableStateOf(false) }
+    var formMessage by rememberSaveable { mutableStateOf<String?>(null) }
+
 
     LaunchedEffect(session is SessionState.Authenticated) {
         if (session is SessionState.Authenticated) {
@@ -35,12 +41,48 @@ fun SquadSyncApp(repository: AuthRepository) {
             destination = AuthDestination.LOGIN
         }
     }
+
+    BackHandler(
+        enabled = session is SessionState.Authenticated && showCreateTeam
+    ) {
+        showCreateTeam = false
+        formMessage = null
+    }
+
     when (val current = session) {
         SessionState.Loading -> SessionLoadingScreen()
         is SessionState.RestoreFailed -> SessionRecoveryScreen(current.error, sessionUi,
             sessionViewModel::retryRestore, sessionViewModel::signOut)
-        is SessionState.Authenticated -> SessionScreen(current.session.user, sessionUi,
-            sessionViewModel::refresh, sessionViewModel::signOut)
+
+        is SessionState.Authenticated -> {
+            if (current.session.user.role == UserRole.COACH && showCreateTeam) {
+                CreateTeamScreen(
+                    onBack = {
+                        showCreateTeam = false
+                        formMessage = null
+                    },
+                    onCreate = {
+                        formMessage = "Forma radi. Spremanje u Supabase još nije povezano."
+                    },
+                    saveError = formMessage
+                )
+            } else {
+                SessionScreen(
+                    user = current.session.user,
+                    state = sessionUi,
+                    onRefresh = sessionViewModel::refresh,
+                    onSignOut = {
+                        showCreateTeam = false
+                        formMessage = null
+                        sessionViewModel.signOut()
+                    },
+                    onCreateTeamClick = {
+                        formMessage = null
+                        showCreateTeam = true
+                    }
+                )
+            }
+        }
         SessionState.SignedOut -> when (destination) {
             AuthDestination.LOGIN -> LoginScreen(login, loginViewModel::onEmailChange,
                 loginViewModel::onPasswordChange, loginViewModel::submit, onRegistrationClick = {
