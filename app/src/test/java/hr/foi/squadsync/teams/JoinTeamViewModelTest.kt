@@ -96,4 +96,16 @@ class JoinTeamViewModelTest {
 
         assertNull(viewModel.uiState.value.error)
     }
+
+    @Test
+    fun givenJoinedTeam_whenCleared_thenMessageRemoved() = runTest {
+        val viewModel = JoinTeamViewModel(repository)
+        viewModel.onAccessCodeChange("X7K2P4")
+        viewModel.submit()
+        runCurrent()
+
+        viewModel.clear()
+
+        assertNull(viewModel.uiState.value.joinedTeamName)
+    }
 }

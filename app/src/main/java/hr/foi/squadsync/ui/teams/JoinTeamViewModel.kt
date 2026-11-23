@@ -56,4 +56,8 @@ class JoinTeamViewModel(private val repository: TeamJoinRepository) : ViewModel(
             }
         }
     }
+
+    fun clear() {
+        _uiState.value = JoinTeamUiState()
+    }
 }
