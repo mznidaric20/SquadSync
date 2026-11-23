@@ -2,8 +2,10 @@ package hr.foi.squadsync.auth
 
 import hr.foi.squadsync.data.remote.SupabaseMapper
 import hr.foi.squadsync.domain.auth.AuthError
+import hr.foi.squadsync.domain.auth.AuthException
 import hr.foi.squadsync.domain.auth.UserRole
 import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 import org.junit.Test
 
 class SupabaseMapperTest {
@@ -26,6 +28,16 @@ class SupabaseMapperTest {
     @Test
     fun givenSportasFromDatabase_whenMapped_thenReturnsAthlete() {
         assertEquals(UserRole.ATHLETE, SupabaseMapper.roleFromDatabase("Sportaš"))
+    }
+
+    @Test
+    fun givenUnknownRole_whenMapped_thenFailsClosed() {
+        try {
+            SupabaseMapper.roleFromDatabase("Nepoznata uloga")
+            fail("Unknown roles must be rejected")
+        } catch (exception: AuthException) {
+            assertEquals(AuthError.SERVICE_UNAVAILABLE, exception.error)
+        }
     }
 
     @Test

@@ -7,6 +7,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import hr.foi.squadsync.domain.auth.AuthRepository
 import hr.foi.squadsync.domain.auth.SessionState
+import hr.foi.squadsync.ui.access.RoleAwareScreen
 
 private enum class AuthDestination { LOGIN, REGISTRATION }
 
@@ -39,7 +40,7 @@ fun SquadSyncApp(repository: AuthRepository) {
         SessionState.Loading -> SessionLoadingScreen()
         is SessionState.RestoreFailed -> SessionRecoveryScreen(current.error, sessionUi,
             sessionViewModel::retryRestore, sessionViewModel::signOut)
-        is SessionState.Authenticated -> SessionScreen(current.session.user, sessionUi,
+        is SessionState.Authenticated -> RoleAwareScreen(current.session.user, sessionUi,
             sessionViewModel::refresh, sessionViewModel::signOut)
         SessionState.SignedOut -> when (destination) {
             AuthDestination.LOGIN -> LoginScreen(login, loginViewModel::onEmailChange,
