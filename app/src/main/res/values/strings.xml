@@ -59,4 +59,12 @@
     <string name="refresh_profile">Osvježi profil</string>
     <string name="session_saved">Prijava je spremljena</string>
     <string name="profile_local_note">Račun je trenutačno dostupan na ovom uređaju.</string>
+    <string name="team_join_title">Pridruživanje momčadi</string>
+    <string name="team_join_code_label">Pristupni kod momčadi</string>
+    <string name="team_join_button">Pridruži se</string>
+    <string name="team_join_success">Sada si član momčadi %1$s.</string>
+    <string name="team_join_not_athlete">Momčadi se može pridružiti samo sportaš.</string>
+    <string name="team_join_invalid_code">Momčad s tim kodom ne postoji. Provjeri kod.</string>
+    <string name="team_join_already_member">Već si član ove momčadi.</string>
+    <string name="team_join_unavailable">Pridruživanje trenutno nije moguće. Pokušaj ponovno.</string>
 </resources>
