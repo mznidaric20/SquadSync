@@ -46,19 +46,23 @@ internal class TestTeamDataSource : TeamDataSource {
     var teams = listOf(ownTeam, foreignTeam)
     var memberGate: CompletableDeferred<Unit>? = null
     var memberFailure: Exception? = null
+    var returnedTeam: Team? = null
+    val memberRequests = mutableListOf<String>()
+    val membersByTeam = mutableMapOf(ownTeam.id to listOf(athlete))
     var listCalls = 0
     var teamCalls = 0
     var memberCalls = 0
     override suspend fun fetchTeams(session: AuthSession): List<Team> { listCalls++; return teams }
     override suspend fun fetchTeam(session: AuthSession, teamId: String): Team? {
         teamCalls++
-        return teams.firstOrNull { it.id == teamId }
+        return returnedTeam ?: teams.firstOrNull { it.id == teamId }
     }
     override suspend fun fetchMembers(session: AuthSession, teamId: String): List<TeamMember> {
         memberCalls++
+        memberRequests.add(teamId)
         memberGate?.await()
         memberFailure?.let { throw it }
-        return listOf(athlete)
+        return membersByTeam[teamId].orEmpty()
     }
 }
 
@@ -76,10 +80,16 @@ internal class TeamAccountStore : LocalAccountStore {
 
 internal class TestTeamRepository : TeamRepository {
     var teams = listOf(ownTeam, emptyTeam)
+    var listFailure: Exception? = null
     var rosterError: TeamError? = null
     val gates = mutableMapOf<String, CompletableDeferred<Unit>>()
-    override suspend fun getMyTeams(): List<Team> = teams
+    val rosterRequests = mutableListOf<String>()
+    override suspend fun getMyTeams(): List<Team> {
+        listFailure?.let { throw it }
+        return teams
+    }
     override suspend fun getRoster(teamId: String): TeamRoster {
+        rosterRequests.add(teamId)
         gates[teamId]?.await()
         rosterError?.let { throw TeamException(it) }
         val team = teams.firstOrNull { it.id == teamId } ?: throw TeamException(TeamError.NOT_FOUND)

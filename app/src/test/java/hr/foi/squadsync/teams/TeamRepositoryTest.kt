@@ -126,4 +126,45 @@ class TeamRepositoryTest {
             assertEquals("Cancelled fetch", exception.message)
         }
     }
+
+    @Test fun unresolvedOrFailedSessionRestorationCannotReadTeamData() = runTest {
+        listOf(SessionState.Loading, SessionState.RestoreFailed(AuthError.SERVICE_UNAVAILABLE)).forEach { state ->
+            auth.sessionState.value = state
+            assertEquals(TeamError.SESSION_REQUIRED, teamFailure { repository.getMyTeams() })
+        }
+        assertEquals(0, source.listCalls)
+    }
+
+    @Test fun mismatchedTeamMetadataIsRejectedBeforeReadingMembers() = runTest {
+        source.returnedTeam = ownTeam.copy(id = "different-team")
+        assertEquals(TeamError.ACCESS_DENIED, teamFailure { repository.getRoster(ownTeam.id) })
+        assertEquals(0, source.memberCalls)
+    }
+
+    @Test fun replacingTheSessionTokenDuringAFetchDoesNotReleaseItsResult() = runTest {
+        source.memberGate = CompletableDeferred()
+        val result = async { teamFailure { repository.getRoster(ownTeam.id) } }
+        runCurrent()
+        auth.sessionState.value = SessionState.Authenticated(coachSession.copy(accessToken = "replacement-token"))
+        source.memberGate!!.complete(Unit)
+        assertEquals(TeamError.SESSION_REQUIRED, result.await())
+    }
+
+    @Test fun anOwnedEmptyTeamReturnsAnEmptyRosterSuccessfully() = runTest {
+        source.teams = listOf(emptyTeam)
+        val roster = repository.getRoster(emptyTeam.id)
+        assertEquals(emptyTeam, roster.team)
+        assertTrue(roster.members.isEmpty())
+        assertEquals(listOf(emptyTeam.id), source.memberRequests)
+    }
+
+    @Test fun consecutiveTeamSelectionsDoNotMixTheirMembers() = runTest {
+        val reserves = emptyTeam.copy(memberCount = 1)
+        val otherMember = athlete.copy(id = "member-b", firstName = "Petar", email = "petar@primjer.com")
+        source.teams = listOf(ownTeam, reserves)
+        source.membersByTeam[reserves.id] = listOf(otherMember)
+        assertEquals(listOf(athlete), repository.getRoster(ownTeam.id).members)
+        assertEquals(listOf(otherMember), repository.getRoster(reserves.id).members)
+        assertEquals(listOf(ownTeam.id, reserves.id), source.memberRequests)
+    }
 }

@@ -45,10 +45,12 @@ U `AppContainer` zamijeni `LocalTeamDataSource` implementacijom `TeamDataSource`
 
 ## Provjera implementacije
 
-Dodane su ciljane jedinične provjere repozitorija, lokalnog izvora i asinkronog UI stanja: vlastita i tuđa momčad, sportaš, nedostatak/istek sesije, odjava i promjena korisnika tijekom zahtjeva, trajna pripadnost kataloga te uklanjanje zastarjelog popisa.
+Pregled članova pokriven je s 31 jediničnim testom te 14 Android testova za UI i integraciju šifrirane pohrane. Provjeravaju se vlastita i tuđa momčad, podaci sportaša, odabir momčadi, prazni prikazi, nedostatak/istek sesije, odjava i promjena korisnika tijekom zahtjeva, trajna pripadnost kataloga te uklanjanje zastarjelog popisa.
 
 ```powershell
 .\gradlew.bat :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
+# Uz pokrenut emulator:
+.\gradlew.bat :app:connectedDebugAndroidTest
 ```
 
-Šire testiranje korisničke priče na emulatoru/uređaju i integracija s budućim backendom ostaju za zasebni subtask testiranja. Početna trenerska nadzorna ploča, kreiranje momčadi i dodavanje članova nisu dio ove izmjene.
+Pregled grana, pokrivenost acceptance kriterija, rezultati izvođenja i upute za Android Studio nalaze se u [izvještaju testiranja](TEAM_MEMBERS_TESTING.md). Testovi pokrivaju lokalnu implementaciju; Supabase dohvat momčadi i poslužiteljske ovlasti trebaju se provjeriti nakon njihove implementacije. Početna trenerska nadzorna ploča, kreiranje momčadi i dodavanje članova nisu dio ove izmjene.
