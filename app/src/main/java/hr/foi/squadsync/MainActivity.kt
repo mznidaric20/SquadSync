@@ -34,6 +34,7 @@ class MainActivity : ComponentActivity() {
                 Box(Modifier.fillMaxSize()) {
                     SquadSyncApp(
                         repository = container.authRepository,
+                        teamJoinRepository = container.teamJoinRepository,
                         createTeamRepository = container.createTeamRepository,
                         teamListRepository = container.teamListRepository,
                         teamRepository = container.teamRepository

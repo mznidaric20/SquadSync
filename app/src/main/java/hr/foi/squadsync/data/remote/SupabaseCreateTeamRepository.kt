@@ -3,6 +3,7 @@ package hr.foi.squadsync.data.remote
 import hr.foi.squadsync.domain.auth.AuthRepository
 import hr.foi.squadsync.domain.auth.SessionState
 import hr.foi.squadsync.domain.auth.UserRole
+import hr.foi.squadsync.domain.teams.AccessCodeGenerator
 import hr.foi.squadsync.domain.teams.CreateTeamError
 import hr.foi.squadsync.domain.teams.CreateTeamException
 import hr.foi.squadsync.domain.teams.CreateTeamRepository
@@ -14,7 +15,6 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.CancellationException
-import java.security.SecureRandom
 import android.util.Log
 
 class SupabaseCreateTeamRepository(
@@ -58,7 +58,7 @@ class SupabaseCreateTeamRepository(
                 naziv = validRequest.name,
                 opis = validRequest.description,
                 trener_id = userId,
-                pristupni_kod = generateAccessCode()
+                pristupni_kod = AccessCodeGenerator.generate()
             )
 
             val savedTeam = client.from("momcadi")
@@ -95,21 +95,5 @@ class SupabaseCreateTeamRepository(
                 e
             )
         }
-    }
-
-    private fun generateAccessCode(): String {
-        val characters = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
-
-        return buildString {
-            repeat(6) {
-                append(
-                    characters[random.nextInt(characters.length)]
-                )
-            }
-        }
-    }
-
-    companion object {
-        private val random = SecureRandom()
     }
 }

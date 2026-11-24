@@ -18,9 +18,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import hr.foi.squadsync.R
+import hr.foi.squadsync.domain.access.AccessAction
+import hr.foi.squadsync.domain.access.RoleAccessPolicy
 import hr.foi.squadsync.domain.auth.AuthError
 import hr.foi.squadsync.domain.auth.UserProfile
 import hr.foi.squadsync.domain.auth.UserRole
+import hr.foi.squadsync.ui.teams.JoinTeamSection
+import hr.foi.squadsync.ui.teams.JoinTeamUiState
 import hr.foi.squadsync.ui.theme.SquadCyan
 import hr.foi.squadsync.ui.theme.SquadNavy
 import hr.foi.squadsync.ui.theme.SquadSyncTheme
@@ -31,6 +35,9 @@ fun SessionScreen(
     state: SessionUiState,
     onRefresh: () -> Unit,
     onSignOut: () -> Unit,
+    joinTeamState: JoinTeamUiState,
+    onAccessCodeChange: (String) -> Unit,
+    onJoinTeam: () -> Unit,
     onCreateTeamClick: () -> Unit = {},
     onMyTeamsClick: () -> Unit = {}
 ) {
@@ -159,6 +166,13 @@ fun SessionScreen(
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.testTag("session_email")
                     )
+                }
+
+                // Tko se smije pridruziti momcadi odlucuje RoleAccessPolicy (samo sportas).
+                if (RoleAccessPolicy.canAccess(user.role, AccessAction.JOIN_TEAM)) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    JoinTeamSection(joinTeamState, onAccessCodeChange, onJoinTeam)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
 
                 Row(
@@ -325,6 +339,9 @@ private fun SessionPreview() {
                 UserRole.ATHLETE
             ),
             SessionUiState(),
+            {},
+            {},
+            JoinTeamUiState(),
             {},
             {}
         )

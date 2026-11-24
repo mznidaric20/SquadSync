@@ -10,14 +10,18 @@ import hr.foi.squadsync.domain.auth.AuthRepository
 import hr.foi.squadsync.domain.auth.SessionState
 import hr.foi.squadsync.domain.auth.UserProfile
 import hr.foi.squadsync.domain.auth.UserRole
+import hr.foi.squadsync.domain.teams.TeamJoinRepository
 import hr.foi.squadsync.domain.teams.TeamRepository
 import hr.foi.squadsync.domain.teams.CreateTeamRepository
 import hr.foi.squadsync.domain.teams.CreateTeamError
 import hr.foi.squadsync.domain.teams.CreateTeamException
 import hr.foi.squadsync.data.remote.SupabaseTeamListRepository
 import hr.foi.squadsync.ui.teams.CreateTeamScreen
+import hr.foi.squadsync.ui.teams.JoinTeamUiState
+import hr.foi.squadsync.ui.teams.JoinTeamViewModel
 import hr.foi.squadsync.ui.teams.MyCreatedTeamsScreen
 import hr.foi.squadsync.ui.teams.TeamsRoute
+import hr.foi.squadsync.ui.teams.teamViewModelFactory
 import hr.foi.squadsync.ui.access.RoleAwareScreen
 import kotlinx.coroutines.launch
 
@@ -36,12 +40,17 @@ private enum class TeamDestination {
 @Composable
 fun SquadSyncApp(
     repository: AuthRepository,
+    teamJoinRepository: TeamJoinRepository,
     createTeamRepository: CreateTeamRepository? = null,
     teamListRepository: SupabaseTeamListRepository? = null,
     teamRepository: TeamRepository? = null
 ) {
     val factory = remember(repository) {
         authViewModelFactory(repository)
+    }
+
+    val teamFactory = remember(teamJoinRepository) {
+        teamViewModelFactory(teamJoinRepository)
     }
 
     val sessionViewModel: SessionViewModel =
@@ -52,6 +61,9 @@ fun SquadSyncApp(
 
     val registrationViewModel: RegistrationViewModel =
         viewModel(factory = factory)
+
+    val joinTeamViewModel: JoinTeamViewModel =
+        viewModel(factory = teamFactory)
 
     val session by sessionViewModel.sessionState
         .collectAsStateWithLifecycle()
@@ -65,6 +77,9 @@ fun SquadSyncApp(
     val registration by registrationViewModel.uiState
         .collectAsStateWithLifecycle()
 
+    val joinTeam by joinTeamViewModel.uiState
+        .collectAsStateWithLifecycle()
+
     var destination by rememberSaveable {
         mutableStateOf(AuthDestination.LOGIN)
     }
@@ -76,6 +91,8 @@ fun SquadSyncApp(
         if (authenticatedUserId != null) {
             loginViewModel.clear()
             registrationViewModel.clear()
+            // Novi korisnik ne smije vidjeti poruke prethodnog.
+            joinTeamViewModel.clear()
             destination = AuthDestination.LOGIN
         }
     }
@@ -110,6 +127,9 @@ fun SquadSyncApp(
                     sessionUi = sessionUi,
                     onRefresh = sessionViewModel::refresh,
                     onSignOut = sessionViewModel::signOut,
+                    joinTeamState = joinTeam,
+                    onAccessCodeChange = joinTeamViewModel::onAccessCodeChange,
+                    onJoinTeam = joinTeamViewModel::submit,
                     createTeamRepository = createTeamRepository,
                     teamRepository = teamListRepository ?: teamRepository
                 )
@@ -153,6 +173,9 @@ private fun AuthenticatedContent(
     sessionUi: SessionUiState,
     onRefresh: () -> Unit,
     onSignOut: () -> Unit,
+    joinTeamState: JoinTeamUiState,
+    onAccessCodeChange: (String) -> Unit,
+    onJoinTeam: () -> Unit,
     createTeamRepository: CreateTeamRepository?,
     teamRepository: TeamRepository?
 ) {
@@ -311,6 +334,10 @@ private fun AuthenticatedContent(
                         formSuccess = null
                         onSignOut()
                     },
+
+                    joinTeamState = joinTeamState,
+                    onAccessCodeChange = onAccessCodeChange,
+                    onJoinTeam = onJoinTeam,
 
                     onCreateTeamClick = {
                         if (coach) {

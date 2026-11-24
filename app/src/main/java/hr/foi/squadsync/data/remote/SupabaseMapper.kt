@@ -3,6 +3,7 @@ package hr.foi.squadsync.data.remote
 import hr.foi.squadsync.domain.auth.AuthError
 import hr.foi.squadsync.domain.auth.AuthException
 import hr.foi.squadsync.domain.auth.UserRole
+import hr.foi.squadsync.domain.teams.TeamJoinError
 
 // Prevodi vrijednosti izmedu aplikacije i Supabase baze.
 object SupabaseMapper {
@@ -31,6 +32,16 @@ object SupabaseMapper {
             "user_already_exists", "email_exists" -> AuthError.EMAIL_ALREADY_USED
             "session_not_found", "refresh_token_not_found" -> AuthError.SESSION_EXPIRED
             else -> AuthError.SERVICE_UNAVAILABLE
+        }
+    }
+
+    // Poruke gresaka koje baca funkcija pridruzi_se_momcadi u bazi
+    fun teamJoinErrorFromMessage(message: String?): TeamJoinError {
+        return when (message) {
+            "NIJE_SPORTAS" -> TeamJoinError.NOT_ATHLETE
+            "NEISPRAVAN_KOD" -> TeamJoinError.INVALID_CODE
+            "VEC_CLAN" -> TeamJoinError.ALREADY_MEMBER
+            else -> TeamJoinError.SERVICE_UNAVAILABLE
         }
     }
 }

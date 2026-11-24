@@ -41,6 +41,7 @@ import hr.foi.squadsync.domain.auth.UserRole
 import hr.foi.squadsync.ui.auth.AuthIcon
 import hr.foi.squadsync.ui.auth.SessionScreen
 import hr.foi.squadsync.ui.auth.SessionUiState
+import hr.foi.squadsync.ui.teams.JoinTeamUiState
 import androidx.compose.foundation.clickable
 
 private enum class RoleTab { PROFILE, ROLE_OVERVIEW }
@@ -66,6 +67,9 @@ fun RoleAwareScreen(
     state: SessionUiState,
     onRefresh: () -> Unit,
     onSignOut: () -> Unit,
+    joinTeamState: JoinTeamUiState,
+    onAccessCodeChange: (String) -> Unit,
+    onJoinTeam: () -> Unit,
     onCreateTeamClick: () -> Unit = {},
     onMyTeamsClick: () -> Unit = {}
 )
@@ -100,6 +104,9 @@ fun RoleAwareScreen(
                     state = state,
                     onRefresh = onRefresh,
                     onSignOut = onSignOut,
+                    joinTeamState = joinTeamState,
+                    onAccessCodeChange = onAccessCodeChange,
+                    onJoinTeam = onJoinTeam,
                     onCreateTeamClick = onCreateTeamClick,
                     onMyTeamsClick = onMyTeamsClick
                 )

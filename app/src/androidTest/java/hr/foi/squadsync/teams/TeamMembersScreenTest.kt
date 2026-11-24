@@ -8,6 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.platform.app.InstrumentationRegistry
 import hr.foi.squadsync.R
+import hr.foi.squadsync.data.local.LocalTeamJoinRepository
 import hr.foi.squadsync.domain.auth.SessionState
 import hr.foi.squadsync.ui.auth.SquadSyncApp
 import hr.foi.squadsync.ui.teams.TeamsRoute
@@ -176,7 +177,11 @@ class TeamMembersScreenTest {
     private fun showApp() {
         compose.setContent {
             SquadSyncTheme(darkTheme = false) {
-                SquadSyncApp(repository = scenario.auth, teamRepository = scenario.repository)
+                SquadSyncApp(
+                    repository = scenario.auth,
+                    teamJoinRepository = LocalTeamJoinRepository(),
+                    teamRepository = scenario.repository
+                )
             }
         }
     }

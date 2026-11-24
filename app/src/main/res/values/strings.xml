@@ -102,5 +102,12 @@
     <string name="access_view_memberships_info">Sportaš može pregledavati momčadi kojima pripada.</string>
     <string name="access_role_development_note">Pojedine funkcionalnosti momčadi još su u razvoju.</string>
     <string name="access_role_security_note">Prikaz izbornika nije sigurnosna provjera. Poslužitelj mora zasebno provjeriti ovlasti i vlasništvo nad podacima.</string>
-
+    <string name="team_join_title">Pridruživanje momčadi</string>
+    <string name="team_join_code_label">Pristupni kod momčadi</string>
+    <string name="team_join_button">Pridruži se</string>
+    <string name="team_join_success">Sada si član momčadi %1$s.</string>
+    <string name="team_join_not_athlete">Momčadi se može pridružiti samo sportaš.</string>
+    <string name="team_join_invalid_code">Momčad s tim kodom ne postoji. Provjeri kod.</string>
+    <string name="team_join_already_member">Već si član ove momčadi.</string>
+    <string name="team_join_unavailable">Pridruživanje trenutno nije moguće. Pokušaj ponovno.</string>
 </resources>

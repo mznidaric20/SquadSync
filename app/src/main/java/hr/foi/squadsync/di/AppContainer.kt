@@ -8,15 +8,18 @@ import hr.foi.squadsync.data.local.EncryptedFileStore
 import hr.foi.squadsync.data.local.EncryptedSessionStore
 import hr.foi.squadsync.data.local.LocalAccountStore
 import hr.foi.squadsync.data.local.LocalAuthDataSource
+import hr.foi.squadsync.data.local.LocalTeamJoinRepository
 import hr.foi.squadsync.data.remote.SupabaseAuthDataSource
 import hr.foi.squadsync.data.remote.SupabaseProvider
 import hr.foi.squadsync.data.remote.SupabaseCreateTeamRepository
+import hr.foi.squadsync.data.remote.SupabaseTeamJoinRepository
 import hr.foi.squadsync.data.remote.SupabaseTeamListRepository
 import hr.foi.squadsync.data.teams.DefaultTeamRepository
 import hr.foi.squadsync.data.teams.TeamDataSource
 import hr.foi.squadsync.data.teams.local.EncryptedTeamStore
 import hr.foi.squadsync.data.teams.local.LocalTeamDataSource
 import hr.foi.squadsync.domain.auth.AuthRepository
+import hr.foi.squadsync.domain.teams.TeamJoinRepository
 import hr.foi.squadsync.domain.teams.TeamRepository
 import hr.foi.squadsync.domain.teams.CreateTeamRepository
 import io.github.jan.supabase.SupabaseClient
@@ -50,6 +53,13 @@ class AppContainer(context: Context) {
             EncryptedFileStore(context, "auth_session.enc")
         )
     )
+
+    // Pridruzivanje momcadi radi samo uz Supabase, inace vraca SERVICE_UNAVAILABLE.
+    val teamJoinRepository: TeamJoinRepository = if (supabaseClient != null) {
+        SupabaseTeamJoinRepository(supabaseClient)
+    } else {
+        LocalTeamJoinRepository()
+    }
 
     // Lokalni izvor podataka za pregled članova momčadi
     private val teamDataSource: TeamDataSource = LocalTeamDataSource(
