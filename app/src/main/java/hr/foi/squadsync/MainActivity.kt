@@ -29,7 +29,8 @@ class MainActivity : ComponentActivity() {
                 Box(Modifier.fillMaxSize()) {
                     SquadSyncApp(
                         repository = container.authRepository,
-                        createTeamRepository = container.createTeamRepository
+                        createTeamRepository = container.createTeamRepository,
+                        teamListRepository = container.teamListRepository
                     )
                     Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).background(SquadNavy))
                 }

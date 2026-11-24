@@ -13,6 +13,8 @@ import hr.foi.squadsync.domain.teams.CreateTeamRepository
 import hr.foi.squadsync.domain.teams.CreateTeamError
 import hr.foi.squadsync.domain.teams.CreateTeamException
 import kotlinx.coroutines.launch
+import hr.foi.squadsync.data.remote.SupabaseTeamListRepository
+import hr.foi.squadsync.ui.teams.MyCreatedTeamsScreen
 
 
 
@@ -21,7 +23,8 @@ private enum class AuthDestination { LOGIN, REGISTRATION }
 @Composable
 fun SquadSyncApp(
     repository: AuthRepository,
-    createTeamRepository: CreateTeamRepository? = null
+    createTeamRepository: CreateTeamRepository? = null,
+    teamListRepository: SupabaseTeamListRepository? = null
 ) {
     val factory = remember(repository) { authViewModelFactory(repository) }
     val sessionViewModel: SessionViewModel = viewModel(factory = factory)
@@ -33,6 +36,7 @@ fun SquadSyncApp(
     val registration by registrationViewModel.uiState.collectAsStateWithLifecycle()
     var destination by rememberSaveable { mutableStateOf(AuthDestination.LOGIN) }
     var showCreateTeam by rememberSaveable { mutableStateOf(false) }
+    var showMyTeams by rememberSaveable { mutableStateOf(false) }
     var formMessage by rememberSaveable { mutableStateOf<String?>(null) }
     var formSuccess by rememberSaveable { mutableStateOf<String?>(null) }
     var isSavingTeam by remember { mutableStateOf(false) }
@@ -61,13 +65,33 @@ fun SquadSyncApp(
         formMessage = null
     }
 
+    BackHandler(
+        enabled = session is SessionState.Authenticated && showMyTeams
+    ) {
+        showMyTeams = false
+    }
+
     when (val current = session) {
         SessionState.Loading -> SessionLoadingScreen()
         is SessionState.RestoreFailed -> SessionRecoveryScreen(current.error, sessionUi,
             sessionViewModel::retryRestore, sessionViewModel::signOut)
 
         is SessionState.Authenticated -> {
-            if (current.session.user.role == UserRole.COACH && showCreateTeam) {
+            if (
+                current.session.user.role == UserRole.COACH &&
+                showMyTeams &&
+                teamListRepository != null
+            ) {
+                MyCreatedTeamsScreen(
+                    repository = teamListRepository,
+                    onBack = {
+                        showMyTeams = false
+                    }
+                )
+            } else if (
+                current.session.user.role == UserRole.COACH &&
+                showCreateTeam
+            ) {
 
                 CreateTeamScreen(
                     onBack = {
@@ -129,7 +153,12 @@ fun SquadSyncApp(
                     onCreateTeamClick = {
                         formMessage = null
                         formSuccess = null
+                        showMyTeams = false
                         showCreateTeam = true
+                    },
+                    onMyTeamsClick = {
+                        showCreateTeam = false
+                        showMyTeams = true
                     }
                 )
             }

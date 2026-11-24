@@ -31,7 +31,8 @@ fun SessionScreen(
     state: SessionUiState,
     onRefresh: () -> Unit,
     onSignOut: () -> Unit,
-    onCreateTeamClick: () -> Unit = {}
+    onCreateTeamClick: () -> Unit = {},
+    onMyTeamsClick: () -> Unit = {}
 ) {
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
         .verticalScroll(rememberScrollState()).navigationBarsPadding(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -77,6 +78,17 @@ fun SessionScreen(
                     ) {
                         Text("Nova momčad")
                     }
+
+                    OutlinedButton(
+                        onClick = onMyTeamsClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 52.dp),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Text("Moje momčadi")
+                    }
+
                 }
 
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {

@@ -13,6 +13,7 @@ import hr.foi.squadsync.domain.auth.AuthRepository
 import hr.foi.squadsync.data.remote.SupabaseCreateTeamRepository
 import hr.foi.squadsync.domain.teams.CreateTeamRepository
 import io.github.jan.supabase.SupabaseClient
+import hr.foi.squadsync.data.remote.SupabaseTeamListRepository
 
 
 class AppContainer(context: Context) {
@@ -47,5 +48,14 @@ class AppContainer(context: Context) {
                 authRepository = authRepository
             )
         }
+
+    val teamListRepository: SupabaseTeamListRepository? =
+        supabaseClient?.let {
+            SupabaseTeamListRepository(
+                client = it,
+                authRepository = authRepository
+            )
+        }
+
 
 }
