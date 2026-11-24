@@ -18,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import hr.foi.squadsync.R
+import hr.foi.squadsync.domain.access.AccessAction
+import hr.foi.squadsync.domain.access.RoleAccessPolicy
 import hr.foi.squadsync.domain.auth.AuthError
 import hr.foi.squadsync.domain.auth.UserProfile
 import hr.foi.squadsync.domain.auth.UserRole
@@ -166,8 +168,8 @@ fun SessionScreen(
                     )
                 }
 
-                // Momcadi se pridruzuje samo sportas, trener ovaj dio ne vidi.
-                if (user.role == UserRole.ATHLETE) {
+                // Tko se smije pridruziti momcadi odlucuje RoleAccessPolicy (samo sportas).
+                if (RoleAccessPolicy.canAccess(user.role, AccessAction.JOIN_TEAM)) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     JoinTeamSection(joinTeamState, onAccessCodeChange, onJoinTeam)
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
