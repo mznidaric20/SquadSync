@@ -57,7 +57,6 @@ private data class AccessEntry(
 private val accessEntries = listOf(
     AccessEntry(AccessAction.CREATE_TEAM, R.string.access_create_team, R.string.access_create_team_info),
     AccessEntry(AccessAction.VIEW_OWN_TEAMS, R.string.access_view_teams, R.string.access_view_teams_info),
-    AccessEntry(AccessAction.VIEW_MEMBERS_OF_OWN_TEAMS, R.string.access_view_members, R.string.access_view_members_info),
     AccessEntry(AccessAction.JOIN_TEAM, R.string.access_join_team, R.string.access_join_team_info),
     AccessEntry(AccessAction.VIEW_OWN_MEMBERSHIPS, R.string.access_view_memberships, R.string.access_view_memberships_info)
 )
