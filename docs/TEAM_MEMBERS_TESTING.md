@@ -1,5 +1,7 @@
 # Testiranje pregleda članova momčadi
 
+> Ovaj izvještaj opisuje provjeru od 23. 11. 2026. Navigacija je 24. 11. 2026. promijenjena u **Moje momčadi → Prikaži članove**, uz povratak na popis momčadi i Supabase adapter. Aktualni tijek i ograničenja opisani su u [dokumentaciji momčadi](TEAMS.md).
+
 Datum provjere: **23. 11. 2026.**
 
 Priča: **Kao trener želim moći pregledavati članove svoje momčadi kako bih imao uvid u njezin sastav.**

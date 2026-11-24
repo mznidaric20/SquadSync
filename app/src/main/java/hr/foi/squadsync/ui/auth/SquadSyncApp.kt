@@ -111,8 +111,7 @@ fun SquadSyncApp(
                     onRefresh = sessionViewModel::refresh,
                     onSignOut = sessionViewModel::signOut,
                     createTeamRepository = createTeamRepository,
-                    teamListRepository = teamListRepository,
-                    teamRepository = teamRepository
+                    teamRepository = teamListRepository ?: teamRepository
                 )
             }
         }
@@ -155,11 +154,14 @@ private fun AuthenticatedContent(
     onRefresh: () -> Unit,
     onSignOut: () -> Unit,
     createTeamRepository: CreateTeamRepository?,
-    teamListRepository: SupabaseTeamListRepository?,
     teamRepository: TeamRepository?
 ) {
     var teamDestination by rememberSaveable {
         mutableStateOf(TeamDestination.HOME)
+    }
+
+    var selectedTeamId by rememberSaveable {
+        mutableStateOf<String?>(null)
     }
 
     var formMessage by rememberSaveable {
@@ -179,17 +181,15 @@ private fun AuthenticatedContent(
 
     val coach = user.role == UserRole.COACH
 
-    // Pregled clanova zasad koristi lokalne ogledne podatke.
-    val localMembersAvailable =
-        teamRepository != null &&
-                teamListRepository == null &&
-                createTeamRepository == null
-
     BackHandler(
         enabled = teamDestination != TeamDestination.HOME
     ) {
         if (!isSavingTeam) {
-            teamDestination = TeamDestination.HOME
+            teamDestination = if (teamDestination == TeamDestination.MEMBERS) {
+                TeamDestination.MY_TEAMS
+            } else {
+                TeamDestination.HOME
+            }
             formMessage = null
             formSuccess = null
         }
@@ -197,17 +197,22 @@ private fun AuthenticatedContent(
 
     when {
 
-        // Pregled kreiranih momcadi - SCRUM-17
         coach &&
                 teamDestination == TeamDestination.MY_TEAMS &&
-                teamListRepository != null -> {
+                teamRepository != null -> {
 
-            MyCreatedTeamsScreen(
-                repository = teamListRepository,
-                onBack = {
-                    teamDestination = TeamDestination.HOME
-                }
-            )
+            saveableStateHolder.SaveableStateProvider(key = "my_teams") {
+                MyCreatedTeamsScreen(
+                    repository = teamRepository,
+                    onShowMembers = { teamId ->
+                        selectedTeamId = teamId
+                        teamDestination = TeamDestination.MEMBERS
+                    },
+                    onBack = {
+                        teamDestination = TeamDestination.HOME
+                    }
+                )
+            }
         }
 
         // Kreiranje momcadi - SCRUM-17
@@ -273,17 +278,17 @@ private fun AuthenticatedContent(
             )
         }
 
-        // Pregled clanova momcadi - lokalni nacin rada
         coach &&
                 teamDestination == TeamDestination.MEMBERS &&
-                localMembersAvailable &&
+                selectedTeamId != null &&
                 teamRepository != null -> {
 
             TeamsRoute(
                 coachId = user.id,
+                teamId = selectedTeamId!!,
                 repository = teamRepository,
                 onBack = {
-                    teamDestination = TeamDestination.HOME
+                    teamDestination = TeamDestination.MY_TEAMS
                 }
             )
         }
@@ -316,17 +321,9 @@ private fun AuthenticatedContent(
                     },
 
                     onMyTeamsClick = {
-                        if (coach && teamListRepository != null) {
+                        if (coach && teamRepository != null) {
                             teamDestination = TeamDestination.MY_TEAMS
                         }
-                    },
-
-                    onTeamsClick = if (coach && localMembersAvailable) {
-                        {
-                            teamDestination = TeamDestination.MEMBERS
-                        }
-                    } else {
-                        null
                     }
                 )
             }

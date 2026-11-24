@@ -40,7 +40,6 @@ import hr.foi.squadsync.ui.theme.SquadSyncTheme
 @Composable
 fun TeamsScreen(
     state: TeamsUiState,
-    onTeamSelect: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     onReload: () -> Unit = {}
@@ -64,8 +63,8 @@ fun TeamsScreen(
                         Modifier.widthIn(max = 680.dp).fillMaxWidth().padding(20.dp))
                 }
             } else if (selectedTeam != null) {
-                item(key = "selector") {
-                    TeamSelector(state.teams, selectedTeam, onTeamSelect,
+                item(key = "team") {
+                    TeamSummary(selectedTeam,
                         Modifier.widthIn(max = 680.dp).fillMaxWidth().padding(horizontal = 20.dp, vertical = 20.dp))
                 }
                 item(key = "members_heading") {
@@ -168,58 +167,25 @@ private fun TeamsIntro(isDemo: Boolean) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TeamSelector(teams: List<Team>, selectedTeam: Team, onSelect: (String) -> Unit, modifier: Modifier) {
-    var expanded by remember { mutableStateOf(false) }
+private fun TeamSummary(team: Team, modifier: Modifier) {
     Surface(modifier, shape = RoundedCornerShape(24.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), shadowElevation = 1.dp) {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-                OutlinedTextField(
-                    value = selectedTeam.name,
-                    onValueChange = {},
-                    readOnly = true,
-                    singleLine = true,
-                    textStyle = MaterialTheme.typography.titleMedium,
-                    label = { Text(stringResource(R.string.teams_select_label)) },
-                    leadingIcon = { AuthIcon(R.drawable.ic_team, tint = MaterialTheme.colorScheme.primary) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                    shape = RoundedCornerShape(14.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant),
-                    modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                        .testTag("team_selector")
-                )
-                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    teams.forEach { team ->
-                        DropdownMenuItem(
-                            text = {
-                                Column {
-                                    Text(team.name, style = MaterialTheme.typography.titleMedium)
-                                    Text(stringResource(R.string.teams_members_count, team.memberCount),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                            },
-                            leadingIcon = { AuthIcon(R.drawable.ic_team, tint = MaterialTheme.colorScheme.primary) },
-                            trailingIcon = if (team.id == selectedTeam.id) {{
-                                AuthIcon(R.drawable.ic_check, tint = MaterialTheme.colorScheme.primary)
-                            }} else null,
-                            onClick = { expanded = false; onSelect(team.id) },
-                            modifier = Modifier.testTag("select_${team.id}")
-                        )
-                    }
-                }
+            Row(verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                AuthIcon(R.drawable.ic_team, tint = MaterialTheme.colorScheme.primary)
+                Text(team.name, style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.testTag("selected_team_name"))
             }
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(selectedTeam.sport, style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                if (team.sport.isNotBlank()) {
+                    Text(team.sport, style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                }
                 Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(8.dp)) {
-                    Text(stringResource(R.string.teams_members_count, selectedTeam.memberCount),
+                    Text(stringResource(R.string.teams_members_count, team.memberCount),
                         style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
                 }
@@ -329,7 +295,7 @@ private fun TeamsEmptyState(title: String, description: String, modifier: Modifi
 @Composable
 private fun TeamsPreview() {
     SquadSyncTheme(darkTheme = false) {
-        TeamsScreen(sampleTeamState(), {}, {})
+        TeamsScreen(sampleTeamState(), {})
     }
 }
 
@@ -337,7 +303,7 @@ private fun TeamsPreview() {
 @Composable
 private fun EmptyTeamPreview() {
     SquadSyncTheme(darkTheme = false) {
-        TeamsScreen(sampleTeamState(index = 1), {}, {})
+        TeamsScreen(sampleTeamState(index = 1), {})
     }
 }
 
@@ -345,14 +311,14 @@ private fun EmptyTeamPreview() {
 @Composable
 private fun TeamsDarkPreview() {
     SquadSyncTheme(darkTheme = true) {
-        TeamsScreen(sampleTeamState(), {}, {})
+        TeamsScreen(sampleTeamState(), {})
     }
 }
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 840)
 @Composable
 private fun NoTeamsPreview() {
-    SquadSyncTheme(darkTheme = false) { TeamsScreen(TeamsUiState(), {}, {}) }
+    SquadSyncTheme(darkTheme = false) { TeamsScreen(TeamsUiState(), {}) }
 }
 
 private fun sampleTeamState(index: Int = 0): TeamsUiState {
@@ -364,11 +330,11 @@ private fun sampleTeamState(index: Int = 0): TeamsUiState {
 @Preview(showBackground = true, widthDp = 360, heightDp = 840)
 @Composable
 private fun TeamsLoadingPreview() {
-    SquadSyncTheme(darkTheme = false) { TeamsScreen(TeamsUiState(isLoading = true), {}, {}) }
+    SquadSyncTheme(darkTheme = false) { TeamsScreen(TeamsUiState(isLoading = true), {}) }
 }
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 840)
 @Composable
 private fun TeamsDeniedPreview() {
-    SquadSyncTheme(darkTheme = false) { TeamsScreen(TeamsUiState(error = TeamError.ACCESS_DENIED), {}, {}) }
+    SquadSyncTheme(darkTheme = false) { TeamsScreen(TeamsUiState(error = TeamError.ACCESS_DENIED), {}) }
 }

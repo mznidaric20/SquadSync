@@ -1,91 +1,86 @@
 package hr.foi.squadsync.data.remote
 
-import android.util.Log
+import hr.foi.squadsync.data.teams.DefaultTeamRepository
+import hr.foi.squadsync.data.teams.TeamDataSource
 import hr.foi.squadsync.domain.auth.AuthRepository
-import hr.foi.squadsync.domain.auth.SessionState
-import hr.foi.squadsync.domain.auth.UserRole
-import hr.foi.squadsync.domain.teams.CreateTeamError
-import hr.foi.squadsync.domain.teams.CreateTeamException
-import hr.foi.squadsync.domain.teams.CreatedTeam
+import hr.foi.squadsync.domain.auth.AuthSession
+import hr.foi.squadsync.domain.teams.Team
+import hr.foi.squadsync.domain.teams.TeamError
+import hr.foi.squadsync.domain.teams.TeamException
+import hr.foi.squadsync.domain.teams.TeamMember
+import hr.foi.squadsync.domain.teams.TeamRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
-import kotlinx.coroutines.CancellationException
+import kotlinx.serialization.Serializable
 
 class SupabaseTeamListRepository(
-    private val client: SupabaseClient,
-    private val authRepository: AuthRepository
-) {
-    suspend fun getMyTeams(): List<CreatedTeam> {
-        val session = (
-                authRepository.sessionState.value
-                        as? SessionState.Authenticated
-                )?.session ?: throw CreateTeamException(
-            CreateTeamError.SESSION_REQUIRED
-        )
+    client: SupabaseClient,
+    authRepository: AuthRepository
+) : TeamRepository by DefaultTeamRepository(authRepository, SupabaseTeamDataSource(client))
 
-        if (session.user.role != UserRole.COACH) {
-            throw CreateTeamException(
-                CreateTeamError.ACCESS_DENIED
-            )
-        }
+private class SupabaseTeamDataSource(private val client: SupabaseClient) : TeamDataSource {
+    override suspend fun fetchTeams(session: AuthSession): List<Team> {
+        requireSession(session)
+        return client.from("momcadi").select(columns = TEAM_COLUMNS) {
+            filter { eq("trener_id", session.user.id) }
+        }.decodeList<MomcadRow>().map { it.toTeam() }
+    }
 
-        try {
-            client.auth.awaitInitialization()
-
-            val userId = client.auth.currentUserOrNull()?.id
-                ?: throw CreateTeamException(
-                    CreateTeamError.SESSION_REQUIRED
-                )
-
-            if (userId != session.user.id) {
-                throw CreateTeamException(
-                    CreateTeamError.SESSION_REQUIRED
-                )
+    override suspend fun fetchTeam(session: AuthSession, teamId: String): Team? {
+        requireSession(session)
+        return client.from("momcadi").select(columns = TEAM_COLUMNS) {
+            filter {
+                eq("id", teamId)
+                eq("trener_id", session.user.id)
             }
+        }.decodeList<MomcadRow>().singleOrNull()?.toTeam()
+    }
 
-            val rows = client.from("momcadi")
-                .select(
-                    columns = Columns.list(
-                        "id",
-                        "naziv",
-                        "opis",
-                        "trener_id",
-                        "pristupni_kod"
-                    )
-                ) {
-                    filter {
-                        eq("trener_id", userId)
-                    }
-                }
-                .decodeList<MomcadRow>()
-
-            return rows.map { row ->
-                CreatedTeam(
-                    id = row.id,
-                    name = row.naziv,
-                    description = row.opis,
-                    coachId = row.trener_id,
-                    accessCode = row.pristupni_kod
-                )
+    override suspend fun fetchMembers(session: AuthSession, teamId: String): List<TeamMember> {
+        requireSession(session)
+        // Read membership through the owned team; RLS also applies to both nested tables.
+        val row = client.from("momcadi").select(columns = Columns.raw(
+            "id,clanovi_momcadi(korisnici(id,ime,prezime,email,uloga))"
+        )) {
+            filter {
+                eq("id", teamId)
+                eq("trener_id", session.user.id)
             }
+        }.decodeList<MomcadMembersRow>().singleOrNull()
+            ?: throw TeamException(TeamError.NOT_FOUND)
 
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: CreateTeamException) {
-            throw e
-        } catch (e: Exception) {
-            Log.e(
-                "SquadSyncTeam",
-                "Greska pri dohvatu momcadi",
-                e
-            )
+        return row.clanovi_momcadi.map { membership ->
+            val member = membership.korisnici ?: throw TeamException(TeamError.DATA_UNAVAILABLE)
+            TeamMember(member.id, member.ime, member.prezime, member.email)
+        }.distinctBy { it.id }.sortedWith(compareBy({ it.lastName }, { it.firstName }, { it.id }))
+    }
 
-            throw CreateTeamException(
-                CreateTeamError.DATA_UNAVAILABLE,
-                e
-            )
+    private suspend fun requireSession(session: AuthSession) {
+        client.auth.awaitInitialization()
+        if (client.auth.currentUserOrNull()?.id != session.user.id) {
+            throw TeamException(TeamError.SESSION_REQUIRED)
         }
     }
+
+    private fun MomcadRow.toTeam() = Team(
+        id = id,
+        name = naziv,
+        sport = "",
+        coachId = trener_id,
+        memberCount = 0,
+        description = opis,
+        accessCode = pristupni_kod
+    )
+
+    private companion object {
+        val TEAM_COLUMNS = Columns.list("id", "naziv", "opis", "trener_id", "pristupni_kod")
+    }
 }
+
+@Serializable
+private data class MomcadMembersRow(val id: String, val clanovi_momcadi: List<ClanMomcadiRow>)
+
+@Serializable
+private data class ClanMomcadiRow(val korisnici: KorisnikRow?)

@@ -32,8 +32,7 @@ fun SessionScreen(
     onRefresh: () -> Unit,
     onSignOut: () -> Unit,
     onCreateTeamClick: () -> Unit = {},
-    onMyTeamsClick: () -> Unit = {},
-    onTeamsClick: (() -> Unit)? = null
+    onMyTeamsClick: () -> Unit = {}
 ) {
     Column(
         Modifier.fillMaxSize()
@@ -181,10 +180,9 @@ fun SessionScreen(
                     AuthErrorMessage(it)
                 }
 
-                // Pregled clanova momcadi dostupan je treneru
-                if (user.role == UserRole.COACH && onTeamsClick != null) {
+                if (user.role == UserRole.COACH) {
                     Button(
-                        onClick = onTeamsClick,
+                        onClick = onMyTeamsClick,
                         modifier = Modifier.fillMaxWidth()
                             .heightIn(min = 56.dp)
                             .testTag("open_teams"),

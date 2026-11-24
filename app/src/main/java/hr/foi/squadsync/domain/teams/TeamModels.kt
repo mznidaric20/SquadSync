@@ -15,7 +15,9 @@ data class Team(
     val name: String,
     val sport: String,
     val coachId: String,
-    val memberCount: Int
+    val memberCount: Int,
+    val description: String? = null,
+    val accessCode: String? = null
 )
 
 data class TeamRoster(

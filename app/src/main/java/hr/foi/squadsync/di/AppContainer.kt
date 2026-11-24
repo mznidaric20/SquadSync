@@ -59,9 +59,6 @@ class AppContainer(context: Context) {
         accountStore = accountStore
     )
 
-    val teamRepository: TeamRepository =
-        DefaultTeamRepository(authRepository, teamDataSource)
-
     // Kreiranje momčadi
     val createTeamRepository: CreateTeamRepository? =
         supabaseClient?.let {
@@ -79,4 +76,7 @@ class AppContainer(context: Context) {
                 authRepository = authRepository
             )
         }
+
+    val teamRepository: TeamRepository =
+        teamListRepository ?: DefaultTeamRepository(authRepository, teamDataSource)
 }

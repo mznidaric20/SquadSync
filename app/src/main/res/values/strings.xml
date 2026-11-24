@@ -63,11 +63,11 @@
     <!-- Pregled momcadi i clanova momcadi -->
 
     <string name="open_teams">Moje momčadi</string>
-    <string name="teams_title">Momčadi</string>
+    <string name="teams_title">Članovi momčadi</string>
     <string name="teams_eyebrow">SNAGA JE U EKIPI</string>
     <string name="teams_description">Svaki član čini razliku. Upoznaj svoj sastav.</string>
-    <string name="teams_back">Natrag na profil</string>
-    <string name="teams_select_label">Odaberi momčad</string>
+    <string name="teams_back">Natrag na moje momčadi</string>
+    <string name="teams_show_members">Prikaži članove</string>
     <string name="teams_members_count">Članovi: %1$d</string>
     <string name="teams_members_heading">Članovi momčadi</string>
     <string name="teams_roster_description">%1$s · popis sportaša</string>
@@ -76,9 +76,9 @@
     <string name="teams_empty_description">Sastav je zasad prazan. Sportaši će se prikazati ovdje kada budu dodani u ovu momčad.</string>
     <string name="teams_none_title">Tvoja ekipa tek nastaje.</string>
     <string name="teams_none_description">Trenutačno nema momčadi za prikaz. Ovdje ćeš moći odabrati momčad i pregledati njezine članove.</string>
-    <string name="teams_loading">Učitavamo tvoje momčadi…</string>
+    <string name="teams_loading">Učitavamo članove momčadi…</string>
     <string name="teams_members_loading">Učitavamo članove momčadi…</string>
-    <string name="teams_refresh">Osvježi momčadi</string>
+    <string name="teams_refresh">Osvježi članove</string>
     <string name="teams_error_title">Popis trenutačno nije dostupan.</string>
     <string name="teams_session_required">Za pregled momčadi potrebna je važeća prijava.</string>
     <string name="teams_access_denied">Nemaš ovlasti za pregled ove momčadi.</string>
@@ -95,9 +95,7 @@
     <string name="access_create_team">Kreiranje momčadi</string>
     <string name="access_create_team_info">Trener može stvarati momčadi koje vodi.</string>
     <string name="access_view_teams">Pregled vlastitih momčadi</string>
-    <string name="access_view_teams_info">Trener može pregledavati momčadi kojima upravlja.</string>
-    <string name="access_view_members">Pregled članova momčadi</string>
-    <string name="access_view_members_info">Trener može pregledavati članove svojih momčadi.</string>
+    <string name="access_view_teams_info">Pregledaj momčadi kojima upravljaš i otvori njihove članove gumbom Prikaži članove.</string>
     <string name="access_join_team">Pridruživanje momčadi</string>
     <string name="access_join_team_info">Sportaš se može pridružiti momčadi pristupnim kodom.</string>
     <string name="access_view_memberships">Pregled vlastitih članstava</string>

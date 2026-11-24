@@ -1,6 +1,5 @@
 package hr.foi.squadsync.ui.teams
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hr.foi.squadsync.domain.teams.Team
@@ -31,7 +30,7 @@ data class TeamsUiState(
 
 class TeamsViewModel(
     private val repository: TeamRepository,
-    private val savedStateHandle: SavedStateHandle,
+    private val teamId: String,
     isDemo: Boolean = false
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(TeamsUiState(isLoading = true, isDemo = isDemo))
@@ -43,31 +42,12 @@ class TeamsViewModel(
         _uiState.value = TeamsUiState(isLoading = true, isDemo = _uiState.value.isDemo)
         request = viewModelScope.launch {
             try {
-                val teams = repository.getMyTeams()
+                val roster = repository.getRoster(teamId)
                 currentCoroutineContext().ensureActive()
-                val savedId = savedStateHandle.get<String>(SELECTED_TEAM)
-                val selected = teams.firstOrNull { it.id == savedId } ?: teams.firstOrNull()
-                _uiState.update { it.copy(teams = teams, selectedTeamId = selected?.id,
-                    isLoading = false, isLoadingMembers = selected != null) }
-                if (selected != null) loadRoster(selected.id)
-            } catch (exception: CancellationException) {
-                throw exception
-            } catch (exception: Exception) {
-                handleError(exception)
-            }
-        }
-    }
-
-    fun selectTeam(teamId: String) {
-        val state = _uiState.value
-        if (state.isLoading || state.teams.none { it.id == teamId }) return
-        if (state.selectedTeamId == teamId && state.error == null) return
-        request?.cancel()
-        _uiState.update { it.copy(selectedTeamId = teamId, members = emptyList(),
-            isLoadingMembers = true, error = null) }
-        request = viewModelScope.launch {
-            try {
-                loadRoster(teamId)
+                _uiState.update { it.copy(
+                    teams = listOf(roster.team), selectedTeamId = roster.team.id,
+                    members = roster.members.toList(), isLoading = false
+                ) }
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: Exception) {
@@ -81,16 +61,6 @@ class TeamsViewModel(
         _uiState.value = TeamsUiState(isLoading = true, isDemo = _uiState.value.isDemo)
     }
 
-    private suspend fun loadRoster(teamId: String) {
-        val roster = repository.getRoster(teamId)
-        currentCoroutineContext().ensureActive()
-        savedStateHandle[SELECTED_TEAM] = teamId
-        _uiState.update { state -> state.copy(
-            teams = state.teams.map { if (it.id == teamId) roster.team else it },
-            members = roster.members.toList(), isLoadingMembers = false, error = null
-        ) }
-    }
-
     private suspend fun handleError(exception: Exception) {
         currentCoroutineContext().ensureActive()
         val error = (exception as? TeamException)?.error ?: TeamError.DATA_UNAVAILABLE
@@ -100,9 +70,5 @@ class TeamsViewModel(
             selectedTeamId = if (denied) null else it.selectedTeamId,
             members = emptyList(), isLoading = false, isLoadingMembers = false, error = error
         ) }
-    }
-
-    private companion object {
-        const val SELECTED_TEAM = "selected_team_id"
     }
 }

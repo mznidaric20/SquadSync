@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.espresso.Espresso.pressBack
 import androidx.test.platform.app.InstrumentationRegistry
 import hr.foi.squadsync.R
 import hr.foi.squadsync.domain.auth.SessionState
@@ -24,26 +25,37 @@ class TeamMembersScreenTest {
     private val scenario = TeamStoryScenario()
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
-    @Test fun coachOpensTheMemberListFromProfileAndReturnsBack() {
+    @Test fun coachOpensMembersFromTheTeamCardAndReturnsToTheTeamList() {
         showApp()
         compose.onNodeWithTag("open_teams").performScrollTo().performClick()
+        waitFor("show_members_${scenario.first.id}")
+        assertEquals(0, scenario.source.memberCalls)
+        capture("05-my-teams.png")
+        compose.onNodeWithTag("show_members_${scenario.first.id}").performScrollTo().performClick()
         waitFor("member_${scenario.ana.id}")
         compose.onNodeWithTag("teams_back").performClick()
-        compose.onNodeWithTag("session_greeting").assertIsDisplayed()
+        waitFor("show_members_${scenario.first.id}")
+        compose.onNodeWithTag("my_teams").assertIsDisplayed()
         compose.onNodeWithTag("team_selector").assertDoesNotExist()
+        compose.onNodeWithTag("member_${scenario.ana.id}").assertDoesNotExist()
     }
 
     @Test fun selectingOwnedTeamsShowsOnlyTheSelectedTeamsMembers() {
-        showTeams()
+        showApp()
+        compose.onNodeWithTag("open_teams").performScrollTo().performClick()
+        waitFor("show_members_${scenario.first.id}")
+        compose.onNodeWithTag("show_members_${scenario.first.id}").performScrollTo().performClick()
         waitFor("member_${scenario.ana.id}")
         compose.onNodeWithText(scenario.ana.fullName).assertIsDisplayed()
         compose.onNodeWithText(scenario.ana.email).assertIsDisplayed()
         compose.onNodeWithText(scenario.ivan.fullName).assertExists()
         capture("01-members.png")
 
-        compose.onNodeWithTag("team_selector").performScrollTo().performClick()
-        compose.onNodeWithTag("select_${scenario.foreign.id}").assertDoesNotExist()
-        compose.onNodeWithTag("select_${scenario.second.id}").performClick()
+        compose.onNodeWithTag("team_selector").assertDoesNotExist()
+        compose.onNodeWithTag("teams_back").performClick()
+        waitFor("show_members_${scenario.second.id}")
+        compose.onNodeWithTag("show_members_${scenario.foreign.id}").assertDoesNotExist()
+        compose.onNodeWithTag("show_members_${scenario.second.id}").performScrollTo().performClick()
         waitFor("member_${scenario.petar.id}")
         compose.onNodeWithText(scenario.petar.fullName).assertIsDisplayed()
         compose.onNodeWithText(scenario.petar.email).assertIsDisplayed()
@@ -53,9 +65,7 @@ class TeamMembersScreenTest {
     }
 
     @Test fun emptyTeamShowsTheExplicitEmptyRosterMessage() {
-        showTeams()
-        waitFor("member_${scenario.ana.id}")
-        select(scenario.empty.id)
+        showTeams(scenario.empty.id)
         waitFor("empty_team")
         compose.onNodeWithTag("empty_team").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.teams_empty_title)).assertIsDisplayed()
@@ -66,10 +76,11 @@ class TeamMembersScreenTest {
 
     @Test fun coachWithoutTeamsGetsTheSeparateNoTeamsMessage() {
         scenario.auth.signInAs(scenario.coachWithoutTeams)
-        showTeams()
+        showApp()
+        compose.onNodeWithTag("open_teams").performScrollTo().performClick()
         waitFor("no_teams")
         compose.onNodeWithTag("no_teams").assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.teams_none_title)).assertIsDisplayed()
+        compose.onNodeWithText("Još nemaš kreiranih momčadi.").assertIsDisplayed()
         compose.onNodeWithTag("team_selector").assertDoesNotExist()
         compose.onNodeWithTag("empty_team").assertDoesNotExist()
         assertEquals(0, scenario.source.memberCalls)
@@ -98,7 +109,7 @@ class TeamMembersScreenTest {
     }
 
     @Test fun failedFetchShowsAnErrorAndRetryLoadsMembers() {
-        scenario.source.failNextList = true
+        scenario.source.failNextMembers = true
         showTeams()
         waitFor("teams_error")
         compose.onNodeWithText(context.getString(R.string.teams_data_unavailable)).assertIsDisplayed()
@@ -106,12 +117,12 @@ class TeamMembersScreenTest {
         compose.onNodeWithText(context.getString(R.string.retry)).performScrollTo().performClick()
         waitFor("member_${scenario.ana.id}")
         compose.onNodeWithTag("teams_error").assertDoesNotExist()
-        assertEquals(2, scenario.source.listCalls)
+        assertEquals(2, scenario.source.memberCalls)
     }
 
     @Test fun pendingFetchShowsLoadingInsteadOfAnEmptyTeam() {
         val gate = CompletableDeferred<Unit>()
-        scenario.source.listGate = gate
+        scenario.source.memberGate = gate
         showTeams()
         waitFor("teams_loading")
         compose.onNodeWithText(context.getString(R.string.teams_loading)).assertIsDisplayed()
@@ -127,6 +138,8 @@ class TeamMembersScreenTest {
         scenario.source.memberGate = gate
         showApp()
         compose.onNodeWithTag("open_teams").performScrollTo().performClick()
+        waitFor("show_members_${scenario.first.id}")
+        compose.onNodeWithTag("show_members_${scenario.first.id}").performScrollTo().performClick()
         waitFor("teams_loading")
         compose.runOnIdle { scenario.auth.sessionState.value = SessionState.SignedOut }
         compose.runOnIdle { gate.complete(Unit) }
@@ -135,24 +148,37 @@ class TeamMembersScreenTest {
         compose.onNodeWithTag("member_${scenario.ana.id}").assertDoesNotExist()
     }
 
-    private fun showTeams() {
+    @Test fun roleOverviewOffersMembersThroughOwnTeamsAndSystemBackRestoresTheList() {
+        showApp()
+        compose.onNodeWithText(context.getString(R.string.access_tab_role)).performClick()
+        compose.onNodeWithText("Pregled članova momčadi").assertDoesNotExist()
+        capture("06-role-overview.png")
+        compose.onNodeWithText(context.getString(R.string.access_view_teams)).performScrollTo().performClick()
+        waitFor("show_members_${scenario.first.id}")
+        compose.onNodeWithTag("show_members_${scenario.first.id}").performScrollTo().performClick()
+        waitFor("member_${scenario.ana.id}")
+        pressBack()
+        waitFor("show_members_${scenario.first.id}")
+        compose.onNodeWithTag("my_teams").assertIsDisplayed()
+        pressBack()
+        compose.onNodeWithText(context.getString(R.string.access_role_coach)).assertIsDisplayed()
+    }
+
+    private fun showTeams(teamId: String = scenario.first.id) {
         val actor = (scenario.auth.sessionState.value as SessionState.Authenticated).session.user
         compose.setContent {
             SquadSyncTheme(darkTheme = false) {
-                TeamsRoute(coachId = actor.id, repository = scenario.repository, onBack = {})
+                TeamsRoute(coachId = actor.id, teamId = teamId, repository = scenario.repository, onBack = {})
             }
         }
     }
 
     private fun showApp() {
         compose.setContent {
-            SquadSyncTheme(darkTheme = false) { SquadSyncApp(scenario.auth, scenario.repository) }
+            SquadSyncTheme(darkTheme = false) {
+                SquadSyncApp(repository = scenario.auth, teamRepository = scenario.repository)
+            }
         }
-    }
-
-    private fun select(teamId: String) {
-        compose.onNodeWithTag("team_selector").performScrollTo().performClick()
-        compose.onNodeWithTag("select_$teamId").performClick()
     }
 
     private fun waitFor(tag: String) {

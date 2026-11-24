@@ -58,6 +58,7 @@ internal class StoryTeamDataSource(private val rosters: List<TeamRoster>) : Team
     var listCalls = 0
     var memberCalls = 0
     var failNextList = false
+    var failNextMembers = false
     var listGate: CompletableDeferred<Unit>? = null
     var memberGate: CompletableDeferred<Unit>? = null
     var denyFirstRoster = false
@@ -81,6 +82,10 @@ internal class StoryTeamDataSource(private val rosters: List<TeamRoster>) : Team
     override suspend fun fetchMembers(session: AuthSession, teamId: String): List<TeamMember> {
         memberCalls++
         memberGate?.await()
+        if (failNextMembers) {
+            failNextMembers = false
+            throw IOException("Isolated test transport failure")
+        }
         return rosters.first { it.team.id == teamId }.members
     }
 }

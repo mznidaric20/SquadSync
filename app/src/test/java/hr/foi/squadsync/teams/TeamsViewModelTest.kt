@@ -1,10 +1,8 @@
 package hr.foi.squadsync.teams
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import hr.foi.squadsync.auth.MainDispatcherRule
 import hr.foi.squadsync.domain.teams.TeamError
-import java.io.IOException
 import hr.foi.squadsync.ui.teams.TeamsViewModel
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,33 +18,49 @@ class TeamsViewModelTest {
     @get:Rule val mainDispatcherRule = MainDispatcherRule()
     private val repository = TestTeamRepository()
 
-    @Test fun changingTeamsClearsThePreviousRosterWhileLoading() = runTest {
-        val viewModel = TeamsViewModel(repository, SavedStateHandle())
+    @Test fun loadsOnlyTheTeamRequestedByTheCard() = runTest {
+        val viewModel = TeamsViewModel(repository, emptyTeam.id)
+        try {
+            viewModel.refresh()
+            runCurrent()
+            assertEquals(emptyTeam.id, viewModel.uiState.value.selectedTeamId)
+            assertEquals(listOf(emptyTeam.id), repository.rosterRequests)
+            assertTrue(viewModel.uiState.value.members.isEmpty())
+            assertFalse(viewModel.uiState.value.isLoading)
+        } finally { viewModel.viewModelScope.cancel() }
+    }
+
+    @Test fun returnsTheRequestedTeamsMembersAndMetadata() = runTest {
+        repository.teams = listOf(ownTeam.copy(description = "Prva momčad", accessCode = "ABC123"))
+        val viewModel = TeamsViewModel(repository, ownTeam.id)
         try {
             viewModel.refresh()
             runCurrent()
             assertEquals(listOf(athlete), viewModel.uiState.value.members)
-            repository.gates[emptyTeam.id] = CompletableDeferred()
-            viewModel.selectTeam(emptyTeam.id)
-            assertTrue(viewModel.uiState.value.members.isEmpty())
-            assertTrue(viewModel.uiState.value.isLoadingMembers)
-            runCurrent()
-            viewModel.selectTeam(ownTeam.id)
-            runCurrent()
-            repository.gates[emptyTeam.id]!!.complete(Unit)
-            runCurrent()
-            assertEquals(ownTeam.id, viewModel.uiState.value.selectedTeamId)
-            assertEquals(listOf(athlete), viewModel.uiState.value.members)
+            assertEquals("Prva momčad", viewModel.uiState.value.selectedTeam?.description)
+            assertEquals("ABC123", viewModel.uiState.value.selectedTeam?.accessCode)
         } finally { viewModel.viewModelScope.cancel() }
     }
 
-    @Test fun deniedFetchRemovesPreviouslyDisplayedTeamsAndMembers() = runTest {
-        val viewModel = TeamsViewModel(repository, SavedStateHandle())
+    @Test fun missingRequestedTeamDoesNotFallBackToAnotherTeam() = runTest {
+        val viewModel = TeamsViewModel(repository, foreignTeam.id)
+        try {
+            viewModel.refresh()
+            runCurrent()
+            assertEquals(TeamError.NOT_FOUND, viewModel.uiState.value.error)
+            assertNull(viewModel.uiState.value.selectedTeam)
+            assertTrue(viewModel.uiState.value.members.isEmpty())
+            assertEquals(listOf(foreignTeam.id), repository.rosterRequests)
+        } finally { viewModel.viewModelScope.cancel() }
+    }
+
+    @Test fun deniedRefreshRemovesPreviouslyDisplayedMembers() = runTest {
+        val viewModel = TeamsViewModel(repository, ownTeam.id)
         try {
             viewModel.refresh()
             runCurrent()
             repository.rosterError = TeamError.ACCESS_DENIED
-            viewModel.selectTeam(emptyTeam.id)
+            viewModel.refresh()
             runCurrent()
             assertTrue(viewModel.uiState.value.teams.isEmpty())
             assertTrue(viewModel.uiState.value.members.isEmpty())
@@ -55,75 +69,54 @@ class TeamsViewModelTest {
         } finally { viewModel.viewModelScope.cancel() }
     }
 
-    @Test fun closingTheScreenClearsPrivateDataButKeepsTheSelectedIdForRevalidation() = runTest {
-        val saved = SavedStateHandle()
-        val viewModel = TeamsViewModel(repository, saved)
+    @Test fun refreshClearsOldMembersWhileWaitingForTheNewRoster() = runTest {
+        val viewModel = TeamsViewModel(repository, ownTeam.id)
         try {
             viewModel.refresh()
             runCurrent()
-            viewModel.selectTeam(emptyTeam.id)
+            repository.gates[ownTeam.id] = CompletableDeferred()
+            viewModel.refresh()
+            runCurrent()
+            assertTrue(viewModel.uiState.value.isLoading)
+            assertTrue(viewModel.uiState.value.members.isEmpty())
+            repository.gates.getValue(ownTeam.id).complete(Unit)
+            runCurrent()
+            assertEquals(listOf(athlete), viewModel.uiState.value.members)
+        } finally { viewModel.viewModelScope.cancel() }
+    }
+
+    @Test fun retryAfterAnErrorRequestsTheSameTeam() = runTest {
+        repository.rosterError = TeamError.DATA_UNAVAILABLE
+        val viewModel = TeamsViewModel(repository, ownTeam.id)
+        try {
+            viewModel.refresh()
+            runCurrent()
+            assertEquals(TeamError.DATA_UNAVAILABLE, viewModel.uiState.value.error)
+            repository.rosterError = null
+            viewModel.refresh()
+            runCurrent()
+            assertNull(viewModel.uiState.value.error)
+            assertEquals(listOf(athlete), viewModel.uiState.value.members)
+            assertEquals(listOf(ownTeam.id, ownTeam.id), repository.rosterRequests)
+        } finally { viewModel.viewModelScope.cancel() }
+    }
+
+    @Test fun closingCancelsPendingMembersAndReopeningRevalidatesTheSameTeam() = runTest {
+        val gate = CompletableDeferred<Unit>()
+        repository.gates[emptyTeam.id] = gate
+        val viewModel = TeamsViewModel(repository, emptyTeam.id)
+        try {
+            viewModel.refresh()
             runCurrent()
             viewModel.onScreenClosed()
+            gate.complete(Unit)
+            runCurrent()
             assertTrue(viewModel.uiState.value.teams.isEmpty())
             assertTrue(viewModel.uiState.value.members.isEmpty())
-            assertTrue(viewModel.uiState.value.isLoading)
             viewModel.refresh()
             runCurrent()
             assertEquals(emptyTeam.id, viewModel.uiState.value.selectedTeamId)
-            assertTrue(viewModel.uiState.value.members.isEmpty())
-            assertFalse(viewModel.uiState.value.isLoadingMembers)
-        } finally { viewModel.viewModelScope.cancel() }
-    }
-
-    @Test fun savedForeignSelectionIsIgnoredWhenLoadingTheCurrentCoachsTeams() = runTest {
-        val saved = SavedStateHandle(mapOf("selected_team_id" to foreignTeam.id))
-        val viewModel = TeamsViewModel(repository, saved)
-        try {
-            viewModel.refresh()
-            runCurrent()
-            assertEquals(ownTeam.id, viewModel.uiState.value.selectedTeamId)
-            assertEquals(listOf(ownTeam.id), repository.rosterRequests)
-        } finally { viewModel.viewModelScope.cancel() }
-    }
-
-    @Test fun anEmptyTeamCatalogFinishesLoadingWithoutRequestingARoster() = runTest {
-        repository.teams = emptyList()
-        val viewModel = TeamsViewModel(repository, SavedStateHandle())
-        try {
-            viewModel.refresh()
-            runCurrent()
             assertFalse(viewModel.uiState.value.isLoading)
-            assertNull(viewModel.uiState.value.error)
-            assertNull(viewModel.uiState.value.selectedTeamId)
-            assertTrue(repository.rosterRequests.isEmpty())
-        } finally { viewModel.viewModelScope.cancel() }
-    }
-
-    @Test fun aRefreshFailureClearsOldMembersAndReportsAnErrorInsteadOfSuccessfulEmptyData() = runTest {
-        val viewModel = TeamsViewModel(repository, SavedStateHandle())
-        try {
-            viewModel.refresh()
-            runCurrent()
-            repository.listFailure = IOException("Unavailable test data source")
-            viewModel.refresh()
-            runCurrent()
-            assertTrue(viewModel.uiState.value.members.isEmpty())
-            assertTrue(viewModel.uiState.value.teams.isEmpty())
-            assertFalse(viewModel.uiState.value.isLoading)
-            assertEquals(TeamError.DATA_UNAVAILABLE, viewModel.uiState.value.error)
-        } finally { viewModel.viewModelScope.cancel() }
-    }
-
-    @Test fun aValidSavedEmptyTeamIsRestoredAndDoesNotShowTheFirstTeamsMembers() = runTest {
-        val saved = SavedStateHandle(mapOf("selected_team_id" to emptyTeam.id))
-        val viewModel = TeamsViewModel(repository, saved)
-        try {
-            viewModel.refresh()
-            runCurrent()
-            assertEquals(emptyTeam.id, viewModel.uiState.value.selectedTeamId)
-            assertTrue(viewModel.uiState.value.members.isEmpty())
-            assertFalse(viewModel.uiState.value.isLoadingMembers)
-            assertEquals(listOf(emptyTeam.id), repository.rosterRequests)
         } finally { viewModel.viewModelScope.cancel() }
     }
 }
