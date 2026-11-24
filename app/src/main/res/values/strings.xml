@@ -59,4 +59,23 @@
     <string name="refresh_profile">Osvježi profil</string>
     <string name="session_saved">Prijava je spremljena</string>
     <string name="profile_local_note">Račun je trenutačno dostupan na ovom uređaju.</string>
+
+    <!-- SCRUM-42: navigacija i prikaz mogucnosti prema korisnickoj ulozi. -->
+    <string name="access_tab_profile">Profil</string>
+    <string name="access_tab_role">Moja uloga</string>
+    <string name="access_role_coach">Funkcionalnosti trenera</string>
+    <string name="access_role_athlete">Funkcionalnosti sportaša</string>
+    <string name="access_role_intro">Prikazane su mogućnosti namijenjene tvojoj korisničkoj ulozi.</string>
+    <string name="access_create_team">Kreiranje momčadi</string>
+    <string name="access_create_team_info">Trener može stvarati momčadi koje vodi.</string>
+    <string name="access_view_teams">Pregled vlastitih momčadi</string>
+    <string name="access_view_teams_info">Trener može pregledavati momčadi kojima upravlja.</string>
+    <string name="access_view_members">Pregled članova momčadi</string>
+    <string name="access_view_members_info">Trener može pregledavati članove svojih momčadi.</string>
+    <string name="access_join_team">Pridruživanje momčadi</string>
+    <string name="access_join_team_info">Sportaš se može pridružiti momčadi pristupnim kodom.</string>
+    <string name="access_view_memberships">Pregled vlastitih članstava</string>
+    <string name="access_view_memberships_info">Sportaš može pregledavati momčadi kojima pripada.</string>
+    <string name="access_role_development_note">Ovaj zaslon prikazuje ovlasti. Pojedine funkcionalnosti momčadi razvijaju se u drugim zadacima i ovdje još nisu dostupne za pokretanje.</string>
+    <string name="access_role_security_note">Prikaz izbornika nije sigurnosna provjera. Poslužitelj mora zasebno provjeriti ovlasti i vlasništvo nad podacima.</string>
 </resources>
