@@ -5,6 +5,7 @@ import hr.foi.squadsync.domain.teams.TeamJoinError
 import hr.foi.squadsync.domain.teams.TeamJoinException
 import hr.foi.squadsync.domain.teams.TeamJoinRepository
 import hr.foi.squadsync.ui.teams.JoinTeamViewModel
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -19,8 +20,12 @@ private class FakeTeamJoinRepository : TeamJoinRepository {
     var error: TeamJoinError? = null
     var calls = 0
 
+    // Ako je postavljen, zahtjev ceka dok ga test ne pusti (kao spora mreza).
+    var gate: CompletableDeferred<Unit>? = null
+
     override suspend fun joinTeam(accessCode: String): String {
         calls++
+        gate?.await()
         val currentError = error
         if (currentError != null) {
             throw TeamJoinException(currentError)
@@ -107,5 +112,39 @@ class JoinTeamViewModelTest {
         viewModel.clear()
 
         assertNull(viewModel.uiState.value.joinedTeamName)
+    }
+
+    @Test
+    fun givenRequestInProgress_whenCleared_thenLateSuccessNotShown() = runTest {
+        repository.gate = CompletableDeferred()
+        val viewModel = JoinTeamViewModel(repository)
+        viewModel.onAccessCodeChange("X7K2P4")
+        viewModel.submit()
+        runCurrent()
+
+        viewModel.clear()
+        repository.gate!!.complete(Unit)
+        runCurrent()
+
+        assertNull(viewModel.uiState.value.joinedTeamName)
+        assertFalse(viewModel.uiState.value.isSubmitting)
+        assertEquals(1, repository.calls)
+    }
+
+    @Test
+    fun givenRequestInProgress_whenCleared_thenLateErrorNotShown() = runTest {
+        repository.gate = CompletableDeferred()
+        repository.error = TeamJoinError.INVALID_CODE
+        val viewModel = JoinTeamViewModel(repository)
+        viewModel.onAccessCodeChange("X7K2P4")
+        viewModel.submit()
+        runCurrent()
+
+        viewModel.clear()
+        repository.gate!!.complete(Unit)
+        runCurrent()
+
+        assertNull(viewModel.uiState.value.error)
+        assertFalse(viewModel.uiState.value.isSubmitting)
     }
 }

@@ -7,9 +7,11 @@ import hr.foi.squadsync.domain.teams.TeamJoinException
 import hr.foi.squadsync.domain.teams.TeamJoinRepository
 import hr.foi.squadsync.domain.validation.AccessCodeValidator
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 data class JoinTeamUiState(
@@ -23,6 +25,9 @@ data class JoinTeamUiState(
 class JoinTeamViewModel(private val repository: TeamJoinRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(JoinTeamUiState())
     val uiState = _uiState.asStateFlow()
+
+    // Zahtjev koji je u tijeku, da ga clear() moze otkazati.
+    private var joinJob: Job? = null
 
     fun onAccessCodeChange(value: String) {
         // Dok zahtjev traje, kod se ne smije mijenjati.
@@ -44,20 +49,25 @@ class JoinTeamViewModel(private val repository: TeamJoinRepository) : ViewModel(
         }
 
         _uiState.update { it.copy(isSubmitting = true, error = null, joinedTeamName = null) }
-        viewModelScope.launch {
+        joinJob = viewModelScope.launch {
             try {
                 val teamName = repository.joinTeam(state.accessCode)
+                // Ako je clear() otkazao zahtjev, rezultat pripada prethodnom korisniku.
+                if (!isActive) return@launch
                 _uiState.update { it.copy(isSubmitting = false, accessCode = "", joinedTeamName = teamName) }
             } catch (exception: CancellationException) {
-                _uiState.update { it.copy(isSubmitting = false) }
+                // Stanje je vec ocistio clear(), pa ga ovdje ne diramo.
                 throw exception
             } catch (exception: TeamJoinException) {
+                if (!isActive) return@launch
                 _uiState.update { it.copy(isSubmitting = false, error = exception.error) }
             }
         }
     }
 
     fun clear() {
+        joinJob?.cancel()
+        joinJob = null
         _uiState.value = JoinTeamUiState()
     }
 }
