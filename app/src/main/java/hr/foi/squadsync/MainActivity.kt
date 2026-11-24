@@ -22,13 +22,29 @@ import hr.foi.squadsync.ui.theme.SquadSyncTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
+
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+        )
+
         val container = (application as SquadSyncApplication).container
+
         setContent {
             SquadSyncTheme {
                 Box(Modifier.fillMaxSize()) {
-                    SquadSyncApp(container.authRepository, container.teamRepository)
-                    Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).background(SquadNavy))
+                    SquadSyncApp(
+                        repository = container.authRepository,
+                        createTeamRepository = container.createTeamRepository,
+                        teamListRepository = container.teamListRepository,
+                        teamRepository = container.teamRepository
+                    )
+
+                    Spacer(
+                        Modifier
+                            .fillMaxWidth()
+                            .windowInsetsTopHeight(WindowInsets.statusBars)
+                            .background(SquadNavy)
+                    )
                 }
             }
         }

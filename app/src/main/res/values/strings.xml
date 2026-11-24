@@ -59,6 +59,9 @@
     <string name="refresh_profile">Osvježi profil</string>
     <string name="session_saved">Prijava je spremljena</string>
     <string name="profile_local_note">Račun je trenutačno dostupan na ovom uređaju.</string>
+
+    <!-- Pregled momcadi i clanova momcadi -->
+
     <string name="open_teams">Moje momčadi</string>
     <string name="teams_title">Momčadi</string>
     <string name="teams_eyebrow">SNAGA JE U EKIPI</string>
@@ -81,4 +84,25 @@
     <string name="teams_access_denied">Nemaš ovlasti za pregled ove momčadi.</string>
     <string name="teams_not_found">Odabrana momčad više nije dostupna. Osvježi popis i odaberi drugu momčad.</string>
     <string name="teams_data_unavailable">Podatke o momčadima nije moguće učitati. Pokušaj ponovno.</string>
+
+    <!-- SCRUM-42: navigacija i kontrola pristupa prema korisnickim ulogama -->
+
+    <string name="access_tab_profile">Profil</string>
+    <string name="access_tab_role">Moja uloga</string>
+    <string name="access_role_coach">Funkcionalnosti trenera</string>
+    <string name="access_role_athlete">Funkcionalnosti sportaša</string>
+    <string name="access_role_intro">Prikazane su mogućnosti namijenjene tvojoj korisničkoj ulozi.</string>
+    <string name="access_create_team">Kreiranje momčadi</string>
+    <string name="access_create_team_info">Trener može stvarati momčadi koje vodi.</string>
+    <string name="access_view_teams">Pregled vlastitih momčadi</string>
+    <string name="access_view_teams_info">Trener može pregledavati momčadi kojima upravlja.</string>
+    <string name="access_view_members">Pregled članova momčadi</string>
+    <string name="access_view_members_info">Trener može pregledavati članove svojih momčadi.</string>
+    <string name="access_join_team">Pridruživanje momčadi</string>
+    <string name="access_join_team_info">Sportaš se može pridružiti momčadi pristupnim kodom.</string>
+    <string name="access_view_memberships">Pregled vlastitih članstava</string>
+    <string name="access_view_memberships_info">Sportaš može pregledavati momčadi kojima pripada.</string>
+    <string name="access_role_development_note">Pojedine funkcionalnosti momčadi još su u razvoju.</string>
+    <string name="access_role_security_note">Prikaz izbornika nije sigurnosna provjera. Poslužitelj mora zasebno provjeriti ovlasti i vlasništvo nad podacima.</string>
+
 </resources>
