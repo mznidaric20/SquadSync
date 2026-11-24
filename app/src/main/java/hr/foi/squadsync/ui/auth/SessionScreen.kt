@@ -68,29 +68,6 @@ fun SessionScreen(
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-                if (user.role == UserRole.COACH) {
-                    Button(
-                        onClick = onCreateTeamClick,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 52.dp),
-                        shape = RoundedCornerShape(14.dp)
-                    ) {
-                        Text("Nova momčad")
-                    }
-
-                    OutlinedButton(
-                        onClick = onMyTeamsClick,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 52.dp),
-                        shape = RoundedCornerShape(14.dp)
-                    ) {
-                        Text("Moje momčadi")
-                    }
-
-                }
-
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Text(stringResource(R.string.email_label), style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)

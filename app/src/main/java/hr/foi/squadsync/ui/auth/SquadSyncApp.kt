@@ -15,6 +15,8 @@ import hr.foi.squadsync.domain.teams.CreateTeamException
 import kotlinx.coroutines.launch
 import hr.foi.squadsync.data.remote.SupabaseTeamListRepository
 import hr.foi.squadsync.ui.teams.MyCreatedTeamsScreen
+import hr.foi.squadsync.ui.access.RoleAwareScreen
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 
 
 
@@ -41,6 +43,7 @@ fun SquadSyncApp(
     var formSuccess by rememberSaveable { mutableStateOf<String?>(null) }
     var isSavingTeam by remember { mutableStateOf(false) }
     val teamScope = rememberCoroutineScope()
+    val saveableStateHolder = rememberSaveableStateHolder()
 
 
 
@@ -141,26 +144,30 @@ fun SquadSyncApp(
                     saveSuccess = formSuccess
                 )
             } else {
-                SessionScreen(
-                    user = current.session.user,
-                    state = sessionUi,
-                    onRefresh = sessionViewModel::refresh,
-                    onSignOut = {
-                        showCreateTeam = false
-                        formMessage = null
-                        sessionViewModel.signOut()
-                    },
-                    onCreateTeamClick = {
-                        formMessage = null
-                        formSuccess = null
-                        showMyTeams = false
-                        showCreateTeam = true
-                    },
-                    onMyTeamsClick = {
-                        showCreateTeam = false
-                        showMyTeams = true
-                    }
-                )
+                saveableStateHolder.SaveableStateProvider(
+                    key = current.session.user.id
+                ) {
+                    RoleAwareScreen(
+                        user = current.session.user,
+                        state = sessionUi,
+                        onRefresh = sessionViewModel::refresh,
+                        onSignOut = {
+                            showCreateTeam = false
+                            formMessage = null
+                            sessionViewModel.signOut()
+                        },
+                        onCreateTeamClick = {
+                            formMessage = null
+                            formSuccess = null
+                            showMyTeams = false
+                            showCreateTeam = true
+                        },
+                        onMyTeamsClick = {
+                            showCreateTeam = false
+                            showMyTeams = true
+                        }
+                    )
+                }
             }
         }
         SessionState.SignedOut -> when (destination) {
