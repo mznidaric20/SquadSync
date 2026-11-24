@@ -26,7 +26,8 @@ fun CreateTeamScreen(
     onBack: () -> Unit,
     onCreate: (CreateTeamRequest) -> Unit,
     isSaving: Boolean = false,
-    saveError: String? = null
+    saveError: String? = null,
+    saveSuccess: String? = null
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
@@ -158,6 +159,14 @@ fun CreateTeamScreen(
                     )
                 }
 
+                saveSuccess?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
                 Button(
                     onClick = {
                         if (name.isBlank()) {
@@ -174,7 +183,7 @@ fun CreateTeamScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 52.dp),
-                    enabled = !isSaving,
+                    enabled = !isSaving && saveSuccess == null,
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     if (isSaving) {
