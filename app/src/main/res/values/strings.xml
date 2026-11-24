@@ -60,7 +60,33 @@
     <string name="session_saved">Prijava je spremljena</string>
     <string name="profile_local_note">Račun je trenutačno dostupan na ovom uređaju.</string>
 
-    <!-- SCRUM-42: navigacija i prikaz mogucnosti prema korisnickoj ulozi. -->
+    <!-- Pregled momcadi i clanova momcadi -->
+
+    <string name="open_teams">Moje momčadi</string>
+    <string name="teams_title">Članovi momčadi</string>
+    <string name="teams_eyebrow">SNAGA JE U EKIPI</string>
+    <string name="teams_description">Svaki član čini razliku. Upoznaj svoj sastav.</string>
+    <string name="teams_back">Natrag na moje momčadi</string>
+    <string name="teams_show_members">Prikaži članove</string>
+    <string name="teams_members_count">Članovi: %1$d</string>
+    <string name="teams_members_heading">Članovi momčadi</string>
+    <string name="teams_roster_description">%1$s · popis sportaša</string>
+    <string name="teams_demo_badge">Ogledni podaci</string>
+    <string name="teams_empty_title">Momčad još nema članova.</string>
+    <string name="teams_empty_description">Sastav je zasad prazan. Sportaši će se prikazati ovdje kada budu dodani u ovu momčad.</string>
+    <string name="teams_none_title">Tvoja ekipa tek nastaje.</string>
+    <string name="teams_none_description">Trenutačno nema momčadi za prikaz. Ovdje ćeš moći odabrati momčad i pregledati njezine članove.</string>
+    <string name="teams_loading">Učitavamo članove momčadi…</string>
+    <string name="teams_members_loading">Učitavamo članove momčadi…</string>
+    <string name="teams_refresh">Osvježi članove</string>
+    <string name="teams_error_title">Popis trenutačno nije dostupan.</string>
+    <string name="teams_session_required">Za pregled momčadi potrebna je važeća prijava.</string>
+    <string name="teams_access_denied">Nemaš ovlasti za pregled ove momčadi.</string>
+    <string name="teams_not_found">Odabrana momčad više nije dostupna. Osvježi popis i odaberi drugu momčad.</string>
+    <string name="teams_data_unavailable">Podatke o momčadima nije moguće učitati. Pokušaj ponovno.</string>
+
+    <!-- SCRUM-42: navigacija i kontrola pristupa prema korisnickim ulogama -->
+
     <string name="access_tab_profile">Profil</string>
     <string name="access_tab_role">Moja uloga</string>
     <string name="access_role_coach">Funkcionalnosti trenera</string>
@@ -69,13 +95,12 @@
     <string name="access_create_team">Kreiranje momčadi</string>
     <string name="access_create_team_info">Trener može stvarati momčadi koje vodi.</string>
     <string name="access_view_teams">Pregled vlastitih momčadi</string>
-    <string name="access_view_teams_info">Trener može pregledavati momčadi kojima upravlja.</string>
-    <string name="access_view_members">Pregled članova momčadi</string>
-    <string name="access_view_members_info">Trener može pregledavati članove svojih momčadi.</string>
+    <string name="access_view_teams_info">Pregledaj momčadi kojima upravljaš i otvori njihove članove gumbom Prikaži članove.</string>
     <string name="access_join_team">Pridruživanje momčadi</string>
     <string name="access_join_team_info">Sportaš se može pridružiti momčadi pristupnim kodom.</string>
     <string name="access_view_memberships">Pregled vlastitih članstava</string>
     <string name="access_view_memberships_info">Sportaš može pregledavati momčadi kojima pripada.</string>
-    <string name="access_role_development_note">Ovaj zaslon prikazuje ovlasti. Pojedine funkcionalnosti momčadi razvijaju se u drugim zadacima i ovdje još nisu dostupne za pokretanje.</string>
+    <string name="access_role_development_note">Pojedine funkcionalnosti momčadi još su u razvoju.</string>
     <string name="access_role_security_note">Prikaz izbornika nije sigurnosna provjera. Poslužitelj mora zasebno provjeriti ovlasti i vlasništvo nad podacima.</string>
+
 </resources>

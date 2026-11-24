@@ -6,18 +6,22 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import hr.foi.squadsync.data.remote.SupabaseTeamListRepository
-import hr.foi.squadsync.domain.teams.CreatedTeam
+import hr.foi.squadsync.R
+import hr.foi.squadsync.domain.teams.Team
+import hr.foi.squadsync.domain.teams.TeamRepository
 import kotlinx.coroutines.CancellationException
 
 @Composable
 fun MyCreatedTeamsScreen(
-    repository: SupabaseTeamListRepository,
+    repository: TeamRepository,
+    onShowMembers: (String) -> Unit,
     onBack: () -> Unit
 ) {
     var teams by remember {
-        mutableStateOf<List<CreatedTeam>>(emptyList())
+        mutableStateOf<List<Team>>(emptyList())
     }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -43,7 +47,8 @@ fun MyCreatedTeamsScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .safeDrawingPadding()
-            .padding(24.dp),
+            .padding(24.dp)
+            .testTag("my_teams"),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
@@ -69,7 +74,7 @@ fun MyCreatedTeamsScreen(
             }
 
             teams.isEmpty() -> {
-                Text("Još nemaš kreiranih momčadi.")
+                Text("Još nemaš kreiranih momčadi.", modifier = Modifier.testTag("no_teams"))
             }
 
             else -> {
@@ -91,10 +96,20 @@ fun MyCreatedTeamsScreen(
                                 Text(it)
                             }
 
-                            Text(
-                                text = "Pristupni kod: ${team.accessCode}",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                            team.accessCode?.let { accessCode ->
+                                Text(
+                                    text = "Pristupni kod: $accessCode",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+
+                            OutlinedButton(
+                                onClick = { onShowMembers(team.id) },
+                                modifier = Modifier.fillMaxWidth()
+                                    .testTag("show_members_${team.id}")
+                            ) {
+                                Text(stringResource(R.string.teams_show_members))
+                            }
                         }
                     }
                 }
