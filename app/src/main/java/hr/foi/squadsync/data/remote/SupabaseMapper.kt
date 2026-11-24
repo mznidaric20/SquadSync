@@ -1,6 +1,7 @@
 package hr.foi.squadsync.data.remote
 
 import hr.foi.squadsync.domain.auth.AuthError
+import hr.foi.squadsync.domain.auth.AuthException
 import hr.foi.squadsync.domain.auth.UserRole
 import hr.foi.squadsync.domain.teams.TeamJoinError
 
@@ -18,11 +19,13 @@ object SupabaseMapper {
     fun roleFromDatabase(value: String): UserRole {
         return when (value) {
             "Trener" -> UserRole.COACH
-            else -> UserRole.ATHLETE
+            "Sportaš" -> UserRole.ATHLETE
+            // Nepoznata uloga nije sportas; odbijamo nepoznatu vrijednost.
+            else -> throw AuthException(AuthError.SERVICE_UNAVAILABLE)
         }
     }
 
-    // Kodovi gresaka koje vraca Supabase Auth
+    // Kodovi gresaka koje vraca Supabase Auth.
     fun errorFromCode(code: String?): AuthError {
         return when (code) {
             "invalid_credentials", "email_not_confirmed" -> AuthError.INVALID_CREDENTIALS

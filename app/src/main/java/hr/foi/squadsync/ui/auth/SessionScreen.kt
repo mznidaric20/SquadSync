@@ -35,7 +35,9 @@ fun SessionScreen(
     onSignOut: () -> Unit,
     joinTeamState: JoinTeamUiState,
     onAccessCodeChange: (String) -> Unit,
-    onJoinTeam: () -> Unit
+    onJoinTeam: () -> Unit,
+    onCreateTeamClick: () -> Unit = {},
+    onMyTeamsClick: () -> Unit = {}
 ) {
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
         .verticalScroll(rememberScrollState()).navigationBarsPadding(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -70,6 +72,7 @@ fun SessionScreen(
                     }
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Text(stringResource(R.string.email_label), style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
