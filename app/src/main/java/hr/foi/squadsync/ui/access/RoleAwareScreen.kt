@@ -41,6 +41,7 @@ import hr.foi.squadsync.domain.auth.UserRole
 import hr.foi.squadsync.ui.auth.AuthIcon
 import hr.foi.squadsync.ui.auth.SessionScreen
 import hr.foi.squadsync.ui.auth.SessionUiState
+import androidx.compose.foundation.clickable
 
 private enum class RoleTab { PROFILE, ROLE_OVERVIEW }
 
@@ -65,8 +66,11 @@ fun RoleAwareScreen(
     user: UserProfile,
     state: SessionUiState,
     onRefresh: () -> Unit,
-    onSignOut: () -> Unit
-) {
+    onSignOut: () -> Unit,
+    onCreateTeamClick: () -> Unit = {},
+    onMyTeamsClick: () -> Unit = {}
+)
+ {
     var tab by rememberSaveable(user.id) { mutableStateOf(RoleTab.PROFILE) }
     BackHandler(enabled = tab == RoleTab.ROLE_OVERVIEW) { tab = RoleTab.PROFILE }
 
@@ -91,15 +95,27 @@ fun RoleAwareScreen(
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             when (tab) {
-                RoleTab.PROFILE -> SessionScreen(user, state, onRefresh, onSignOut)
-                RoleTab.ROLE_OVERVIEW -> RoleOverviewScreen(user)
+
+                RoleTab.PROFILE -> SessionScreen(
+                    user = user,
+                    state = state,
+                    onRefresh = onRefresh,
+                    onSignOut = onSignOut,
+                    onCreateTeamClick = onCreateTeamClick,
+                    onMyTeamsClick = onMyTeamsClick
+                )
+                RoleTab.ROLE_OVERVIEW -> RoleOverviewScreen(
+                    user = user,
+                    onCreateTeamClick = onCreateTeamClick,
+                    onMyTeamsClick = onMyTeamsClick
+                )
             }
         }
     }
 }
 
 @Composable
-private fun RoleOverviewScreen(user: UserProfile) {
+private fun RoleOverviewScreen(user: UserProfile, onCreateTeamClick: () -> Unit, onMyTeamsClick: () -> Unit) {
     val title = if (user.role == UserRole.COACH) R.string.access_role_coach else R.string.access_role_athlete
     val entries = accessEntries.filter { RoleAccessPolicy.canAccess(user.role, it.action) }
 
@@ -119,7 +135,18 @@ private fun RoleOverviewScreen(user: UserProfile) {
         )
         entries.forEach { item ->
             Surface(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(
+                        enabled = item.action == AccessAction.CREATE_TEAM ||
+                                item.action == AccessAction.VIEW_OWN_TEAMS
+                    ) {
+                        when (item.action) {
+                            AccessAction.CREATE_TEAM -> onCreateTeamClick()
+                            AccessAction.VIEW_OWN_TEAMS -> onMyTeamsClick()
+                            else -> Unit
+                        }
+                    },
                 color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(20.dp)
             ) {

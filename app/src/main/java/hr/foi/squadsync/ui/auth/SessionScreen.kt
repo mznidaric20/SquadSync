@@ -26,7 +26,14 @@ import hr.foi.squadsync.ui.theme.SquadNavy
 import hr.foi.squadsync.ui.theme.SquadSyncTheme
 
 @Composable
-fun SessionScreen(user: UserProfile, state: SessionUiState, onRefresh: () -> Unit, onSignOut: () -> Unit) {
+fun SessionScreen(
+    user: UserProfile,
+    state: SessionUiState,
+    onRefresh: () -> Unit,
+    onSignOut: () -> Unit,
+    onCreateTeamClick: () -> Unit = {},
+    onMyTeamsClick: () -> Unit = {}
+) {
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
         .verticalScroll(rememberScrollState()).navigationBarsPadding(), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(Modifier.fillMaxWidth().background(Brush.linearGradient(listOf(SquadNavy, Color(0xFF0E3670))))) {
@@ -60,6 +67,7 @@ fun SessionScreen(user: UserProfile, state: SessionUiState, onRefresh: () -> Uni
                     }
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Text(stringResource(R.string.email_label), style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
