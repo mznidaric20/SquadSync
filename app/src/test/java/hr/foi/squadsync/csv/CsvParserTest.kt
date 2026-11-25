@@ -71,5 +71,18 @@ class CsvParserTest {
         assertEquals(1, result.invalidRows.size)
     }
 
+    @Test
+    fun csvWithExtraColumnShouldBeInvalid() {
+        val csv = """
+        ime,prezime,email
+        Luka,Horvat,lhorvat@gmail.com,visak
+    """.trimIndent()
+
+        val result = CsvParser.parse(csv)
+
+        assertEquals(0, result.validRows.size)
+        assertEquals(1, result.invalidRows.size)
+    }
+
 
 }

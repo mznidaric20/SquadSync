@@ -92,4 +92,15 @@
 - Rezultat: 5 testova prolazi, 0 neuspjelih.
 - Status: PASSED.
 
+### TDD ciklus 6 – Validacija broja stupaca
+
+#### RED faza
+
+- Test: csvWithExtraColumnShouldBeInvalid
+- Očekivani rezultat: 0 ispravnih redaka.
+- Dobiveni rezultat: 1 ispravan redak.
+- Status: FAILED (očekivano).
+- Razlog: broj CSV stupaca nije provjeren.
+- Rezultat: 5 testova prolazi, 1 ne prolazi.
+
 

@@ -80,4 +80,12 @@ AI alat: ChatGPT
 - Odluka tima: Proširiti postojeću validaciju.
 - Rezultat: Svih pet testova uspješno prolazi.
 
+### XP-04 – Validacija broja stupaca – RED
+
+- Upit AI-ju: Dalje.
+- Prijedlog AI-ja: Testiranje CSV retka
+  s viškom stupaca.
+- Odluka tima: Napisati test prije implementacije.
+- Rezultat: Test očekivano ne prolazi.
+
 
