@@ -126,4 +126,11 @@ AI alat: ChatGPT
 - Rezultat: Svih osam testova uspješno prolazi.
 
 
+### XP-04 – REFACTOR
+
+- Upit AI-ju: Što dalje?
+- Prijedlog AI-ja: Izdvajanje validacije u zasebnu metodu.
+- Odluka tima: Refaktorirati CSV parser.
+- Rezultat: Svih osam testova prolazi.
+
 

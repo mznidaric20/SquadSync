@@ -143,4 +143,12 @@
 - Dodatna implementacija nije bila potrebna.
 
 
+### REFACTOR – CSV parser
+
+- Validacija izdvojena u metodu isValidRow().
+- Poboljšana čitljivost programskog koda.
+- Postojeća funkcionalnost ostala je nepromijenjena.
+- Rezultat: 8 uspješnih testova, 0 neuspjelih.
+
+
 

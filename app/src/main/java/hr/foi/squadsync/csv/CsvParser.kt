@@ -20,27 +20,19 @@ object CsvParser {
         val seenEmails = mutableSetOf<String>()
 
         for (row in rows) {
-            val columns = row.split(",")
+            val columns = row.split(",").map { it.trim() }
 
-            if (columns.size != 3) {
+            if (!isValidRow(columns)) {
                 invalidRows.add(row)
                 continue
             }
 
-            val firstName = columns[0].trim()
-            val lastName = columns[1].trim()
-            val email = columns[2].trim()
+            val email = columns[2].lowercase()
 
-            if (firstName.isBlank() ||
-                lastName.isBlank() ||
-                email.isBlank() ||
-                !emailRegex.matches(email)
-            ) {
-                invalidRows.add(row)
-            } else if (!seenEmails.add(email.lowercase())) {
-                invalidRows.add(row)
-            } else {
+            if (seenEmails.add(email)) {
                 validRows.add(row)
+            } else {
+                invalidRows.add(row)
             }
         }
 
@@ -48,5 +40,12 @@ object CsvParser {
             validRows = validRows,
             invalidRows = invalidRows
         )
+    }
+
+    private fun isValidRow(columns: List<String>): Boolean {
+        return columns.size == 3 &&
+                columns[0].isNotBlank() &&
+                columns[1].isNotBlank() &&
+                emailRegex.matches(columns[2])
     }
 }
