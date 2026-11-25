@@ -31,4 +31,11 @@ AI alat: ChatGPT
 - Prijedlog AI-ja: Provjera prvog CSV stupca
   metodom isBlank().
 - Odluka tima: Implementirati minimalnu validaciju imena.
-- Rezultat: Oba testa uspješno prolaze.
+- Rezultat: 
+
+### XP-04 – Validacija prezimena – RED faza
+
+- Upit AI-ju: Idemo na idući test.
+- Prijedlog AI-ja: Testiranje CSV retka bez prezimena.
+- Odluka tima: Napisati test prije implementacije.
+- Rezultat: Test očekivano ne prolazi.

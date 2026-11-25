@@ -35,3 +35,14 @@
 - Redci bez imena označavaju se kao neispravni.
 - Rezultat: 2 testa prolaze, 0 neuspjelih.
 - Status: PASSED.
+
+### TDD ciklus 3 – Validacija prezimena
+
+#### RED faza
+
+- Test: csvWithoutLastNameShouldBeInvalid
+- Očekivani rezultat: 0 ispravnih redaka.
+- Dobiveni rezultat: 1 ispravan redak.
+- Status: FAILED (očekivano).
+- Razlog: validacija prezimena nije implementirana.
+- Rezultat: 2 testa prolaze, 1 ne prolazi.
