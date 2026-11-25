@@ -84,5 +84,19 @@ class CsvParserTest {
         assertEquals(1, result.invalidRows.size)
     }
 
+    @Test
+    fun csvWithDuplicateEmailShouldBeInvalid() {
+        val csv = """
+        ime,prezime,email
+        Luka,Horvat,lhorvat@gmail.com
+        Luka,Horvat,lhorvat@gmail.com
+    """.trimIndent()
+
+        val result = CsvParser.parse(csv)
+
+        assertEquals(1, result.validRows.size)
+        assertEquals(1, result.invalidRows.size)
+    }
+
 
 }

@@ -97,5 +97,14 @@ AI alat: ChatGPT
   brojem stupaca prije daljnje validacije.
 - Rezultat: Svih šest testova uspješno prolazi.
 
+### XP-04 – Validacija duplikata – RED
+
+- Upit AI-ju: Dalje.
+- Prijedlog AI-ja: Testiranje CSV redaka
+  s jednakim e-mail adresama.
+- Odluka tima: Napisati test prije implementacije
+  provjere duplikata.
+- Rezultat: Test očekivano ne prolazi.
+
 
 

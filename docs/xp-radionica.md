@@ -112,4 +112,15 @@
 - Rezultat: 6 testova prolazi, 0 neuspjelih.
 - Status: PASSED.
 
+### TDD ciklus 7 – Validacija dupliciranih sportaša
+
+#### RED faza
+
+- Test: csvWithDuplicateEmailShouldBeInvalid
+- Očekivani rezultat: 1 ispravan i 1 neispravan redak.
+- Dobiveni rezultat: 2 ispravna retka.
+- Status: FAILED (očekivano).
+- Razlog: provjera duplikata nije implementirana.
+- Rezultat: 6 testova prolazi, 1 ne prolazi.
+
 
