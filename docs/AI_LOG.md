@@ -54,3 +54,12 @@ AI alat: ChatGPT
 - Prijedlog AI-ja: Testiranje CSV retka bez e-maila.
 - Odluka tima: Napisati test prije implementacije.
 - Rezultat: Test očekivano ne prolazi.
+
+
+### XP-04 – Validacija nedostajućeg e-maila – GREEN
+
+- Upit AI-ju: Nastavak nakon RED testa e-maila.
+- Prijedlog AI-ja: Provjera trećeg CSV stupca
+  metodama getOrElse() i isBlank().
+- Odluka tima: Proširiti postojeću validaciju.
+- Rezultat: Sva četiri testa uspješno prolaze.

@@ -64,3 +64,12 @@
 - Status: FAILED (očekivano).
 - Razlog: validacija e-maila nije implementirana.
 - Rezultat: 3 testa prolaze, 1 ne prolazi.
+
+
+#### GREEN faza
+
+- Implementirana provjera nedostajućeg e-maila.
+- Redci bez e-maila označavaju se kao neispravni.
+- Rezultat: 4 testa prolaze, 0 neuspjelih.
+- Status: PASSED.
+
