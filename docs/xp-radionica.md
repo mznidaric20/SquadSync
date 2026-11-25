@@ -73,3 +73,14 @@
 - Rezultat: 4 testa prolaze, 0 neuspjelih.
 - Status: PASSED.
 
+### TDD ciklus 5 – Validacija formata e-maila
+
+#### RED faza
+
+- Test: csvWithInvalidEmailShouldBeInvalid
+- Očekivani rezultat: 0 ispravnih redaka.
+- Dobiveni rezultat: 1 ispravan redak.
+- Status: FAILED (očekivano).
+- Razlog: provjera formata e-maila nije implementirana.
+- Rezultat: 4 testa prolaze, 1 ne prolazi.
+
