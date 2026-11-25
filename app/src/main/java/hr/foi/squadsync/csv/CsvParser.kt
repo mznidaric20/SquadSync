@@ -8,8 +8,12 @@ data class CsvResult(
 object CsvParser {
 
     fun parse(csv: String): CsvResult {
+        val rows = csv.lines()
+            .drop(1)
+            .filter { it.isNotBlank() }
+
         return CsvResult(
-            validRows = emptyList(),
+            validRows = rows,
             invalidRows = emptyList()
         )
     }
