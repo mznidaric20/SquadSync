@@ -98,5 +98,39 @@ class CsvParserTest {
         assertEquals(1, result.invalidRows.size)
     }
 
+    @Test
+    fun mixedCsvShouldReturnCorrectValidationResults() {
+        val csv = """
+        ime,prezime,email
+        Luka,Horvat,lhorvat@gmail.com
+        Ivan,Kovacevic,
+        Marko,Babic,mbabic3student.foi.hr
+        Ante,Juric,antejuric@hotmail.com
+        ,Novak,pnovak@gmail.com
+    """.trimIndent()
+
+        val result = CsvParser.parse(csv)
+
+        println("Ispravni redci: ${result.validRows.size}")
+        println("Neispravni redci: ${result.invalidRows.size}")
+
+        println("Ispravni sportaši:")
+        result.validRows.forEach { println(it) }
+
+        println("Neispravni sportaši:")
+        result.invalidRows.forEach { println(it) }
+
+        assertEquals(2, result.validRows.size)
+        assertEquals(3, result.invalidRows.size)
+
+        assertEquals(
+            listOf(
+                "Luka,Horvat,lhorvat@gmail.com",
+                "Ante,Juric,antejuric@hotmail.com"
+            ),
+            result.validRows
+        )
+    }
+
 
 }

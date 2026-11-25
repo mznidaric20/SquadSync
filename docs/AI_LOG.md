@@ -116,4 +116,14 @@ AI alat: ChatGPT
   a ponovljene zapise odbiti.
 - Rezultat: Svih sedam testova uspješno prolazi.
 
+### XP-04 – Testiranje mješovitog CSV-a
+
+- Upit AI-ju: Dalje.
+- Prijedlog AI-ja: Testiranje kombinacije
+  ispravnih i neispravnih CSV redaka.
+- Odluka tima: Provjeriti zajedničko djelovanje
+  svih prethodno implementiranih validacija.
+- Rezultat: Svih osam testova uspješno prolazi.
+
+
 

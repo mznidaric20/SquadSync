@@ -131,4 +131,16 @@
 - Rezultat: 7 testova prolazi, 0 neuspjelih.
 - Status: PASSED.
 
+### Test 8 – Validacija mješovitog CSV-a
+
+- Test: mixedCsvShouldReturnCorrectValidationResults
+- Ukupan broj redaka: 5.
+- Očekivani rezultat: 2 ispravna i 3 neispravna retka.
+- Dobiveni rezultat: 2 ispravna i 3 neispravna retka.
+- Provjeren je i sadržaj ispravnih redaka.
+- Status: PASSED.
+- Svih 8 jediničnih testova uspješno prolazi.
+- Dodatna implementacija nije bila potrebna.
+
+
 
