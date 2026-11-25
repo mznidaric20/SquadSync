@@ -39,3 +39,11 @@ AI alat: ChatGPT
 - Prijedlog AI-ja: Testiranje CSV retka bez prezimena.
 - Odluka tima: Napisati test prije implementacije.
 - Rezultat: Test očekivano ne prolazi.
+
+### XP-04 – Validacija prezimena – GREEN faza
+
+- Upit AI-ju: Nastavak nakon RED testa prezimena.
+- Prijedlog AI-ja: Provjera drugog CSV stupca
+  metodama getOrElse() i isBlank().
+- Odluka tima: Proširiti postojeću validaciju.
+- Rezultat: Sva tri testa uspješno prolaze.
