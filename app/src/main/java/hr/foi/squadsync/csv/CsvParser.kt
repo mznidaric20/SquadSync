@@ -17,6 +17,7 @@ object CsvParser {
 
         val validRows = mutableListOf<String>()
         val invalidRows = mutableListOf<String>()
+        val seenEmails = mutableSetOf<String>()
 
         for (row in rows) {
             val columns = row.split(",")
@@ -35,6 +36,8 @@ object CsvParser {
                 email.isBlank() ||
                 !emailRegex.matches(email)
             ) {
+                invalidRows.add(row)
+            } else if (!seenEmails.add(email.lowercase())) {
                 invalidRows.add(row)
             } else {
                 validRows.add(row)

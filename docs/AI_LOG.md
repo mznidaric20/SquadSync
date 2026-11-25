@@ -107,4 +107,13 @@ AI alat: ChatGPT
 - Rezultat: Test očekivano ne prolazi.
 
 
+### XP-04 – Validacija duplikata – GREEN
+
+- Upit AI-ju: Dalje.
+- Prijedlog AI-ja: Korištenje MutableSet kolekcije
+  za prepoznavanje dupliciranih e-mail adresa.
+- Odluka tima: Prihvatiti prvi ispravan zapis,
+  a ponovljene zapise odbiti.
+- Rezultat: Svih sedam testova uspješno prolazi.
+
 

@@ -123,4 +123,12 @@
 - Razlog: provjera duplikata nije implementirana.
 - Rezultat: 6 testova prolazi, 1 ne prolazi.
 
+#### GREEN faza
+
+- Implementirana provjera dupliciranih e-mail adresa.
+- Za pohranu jedinstvenih adresa koristi se MutableSet.
+- Prvi ispravan zapis se prihvaća, a duplikati odbijaju.
+- Rezultat: 7 testova prolazi, 0 neuspjelih.
+- Status: PASSED.
+
 
