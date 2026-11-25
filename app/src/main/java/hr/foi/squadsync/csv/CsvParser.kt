@@ -12,9 +12,23 @@ object CsvParser {
             .drop(1)
             .filter { it.isNotBlank() }
 
+        val validRows = mutableListOf<String>()
+        val invalidRows = mutableListOf<String>()
+
+        for (row in rows) {
+            val columns = row.split(",")
+            val firstName = columns[0].trim()
+
+            if (firstName.isBlank()) {
+                invalidRows.add(row)
+            } else {
+                validRows.add(row)
+            }
+        }
+
         return CsvResult(
-            validRows = rows,
-            invalidRows = emptyList()
+            validRows = validRows,
+            invalidRows = invalidRows
         )
     }
 }

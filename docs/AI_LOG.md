@@ -24,3 +24,11 @@ AI alat: ChatGPT
 - Prijedlog AI-ja: Testiranje CSV retka bez imena.
 - Odluka tima: Napisati test prije implementacije validacije.
 - Rezultat: Test očekivano ne prolazi.
+
+### XP-04 – Validacija imena – GREEN faza
+
+- Upit AI-ju: Nastavak GREEN faze validacije imena.
+- Prijedlog AI-ja: Provjera prvog CSV stupca
+  metodom isBlank().
+- Odluka tima: Implementirati minimalnu validaciju imena.
+- Rezultat: Oba testa uspješno prolaze.

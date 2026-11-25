@@ -28,3 +28,10 @@
 - Status: FAILED (očekivano).
 - Razlog: validacija imena još nije implementirana.
 - Rezultat svih testova: 1 prolazi, 1 ne prolazi.
+
+#### GREEN faza
+
+- Implementirana validacija imena sportaša.
+- Redci bez imena označavaju se kao neispravni.
+- Rezultat: 2 testa prolaze, 0 neuspjelih.
+- Status: PASSED.
