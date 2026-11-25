@@ -53,3 +53,14 @@
 - Redci bez imena ili prezimena označavaju se kao neispravni.
 - Rezultat: 3 testa prolaze, 0 neuspjelih.
 - Status: PASSED.
+
+### TDD ciklus 4 – Validacija nedostajućeg e-maila
+
+#### RED faza
+
+- Test: csvWithoutEmailShouldBeInvalid
+- Očekivani rezultat: 0 ispravnih redaka.
+- Dobiveni rezultat: 1 ispravan redak.
+- Status: FAILED (očekivano).
+- Razlog: validacija e-maila nije implementirana.
+- Rezultat: 3 testa prolaze, 1 ne prolazi.

@@ -47,3 +47,10 @@ AI alat: ChatGPT
   metodama getOrElse() i isBlank().
 - Odluka tima: Proširiti postojeću validaciju.
 - Rezultat: Sva tri testa uspješno prolaze.
+
+### XP-04 – Validacija nedostajućeg e-maila – RED
+
+- Upit AI-ju: Nastavak na sljedeći test.
+- Prijedlog AI-ja: Testiranje CSV retka bez e-maila.
+- Odluka tima: Napisati test prije implementacije.
+- Rezultat: Test očekivano ne prolazi.

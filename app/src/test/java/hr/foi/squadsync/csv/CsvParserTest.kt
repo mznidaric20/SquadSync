@@ -44,4 +44,17 @@ class CsvParserTest {
         assertEquals(1, result.invalidRows.size)
     }
 
+    @Test
+    fun csvWithoutEmailShouldBeInvalid() {
+        val csv = """
+        ime,prezime,email
+        Ivan,Kovacevic,
+    """.trimIndent()
+
+        val result = CsvParser.parse(csv)
+
+        assertEquals(0, result.validRows.size)
+        assertEquals(1, result.invalidRows.size)
+    }
+
 }
