@@ -3,6 +3,7 @@ package hr.foi.squadsync.teams
 import androidx.lifecycle.viewModelScope
 import hr.foi.squadsync.auth.MainDispatcherRule
 import hr.foi.squadsync.domain.teams.TeamError
+import hr.foi.squadsync.ui.teams.ExportResult
 import hr.foi.squadsync.ui.teams.TeamsViewModel
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,6 +18,40 @@ import org.junit.Test
 class TeamsViewModelTest {
     @get:Rule val mainDispatcherRule = MainDispatcherRule()
     private val repository = TestTeamRepository()
+
+    @Test fun givenExportSaved_whenOnExportSaved_thenSuccessResult() = runTest {
+        val viewModel = TeamsViewModel(repository, ownTeam.id)
+        try {
+            assertNull(viewModel.uiState.value.exportResult)
+
+            viewModel.onExportSaved()
+
+            assertEquals(ExportResult.SUCCESS, viewModel.uiState.value.exportResult)
+        } finally { viewModel.viewModelScope.cancel() }
+    }
+
+    @Test fun givenExportFailed_whenOnExportFailed_thenFailedResult() = runTest {
+        val viewModel = TeamsViewModel(repository, ownTeam.id)
+        try {
+            assertNull(viewModel.uiState.value.exportResult)
+
+            viewModel.onExportFailed()
+
+            assertEquals(ExportResult.FAILED, viewModel.uiState.value.exportResult)
+        } finally { viewModel.viewModelScope.cancel() }
+    }
+
+    @Test fun givenMessageShown_whenOnExportMessageShown_thenResultCleared() = runTest {
+        val viewModel = TeamsViewModel(repository, ownTeam.id)
+        try {
+            viewModel.onExportSaved()
+            assertEquals(ExportResult.SUCCESS, viewModel.uiState.value.exportResult)
+
+            viewModel.onExportMessageShown()
+
+            assertNull(viewModel.uiState.value.exportResult)
+        } finally { viewModel.viewModelScope.cancel() }
+    }
 
     @Test fun givenLoadedTeam_whenExportCsv_thenCsvContainsTeamAthletes() = runTest {
         val viewModel = TeamsViewModel(repository, ownTeam.id)

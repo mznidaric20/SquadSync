@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+enum class ExportResult { SUCCESS, FAILED }
+
 data class TeamsUiState(
     val teams: List<Team> = emptyList(),
     val selectedTeamId: String? = null,
@@ -24,7 +26,8 @@ data class TeamsUiState(
     val isLoading: Boolean = false,
     val isLoadingMembers: Boolean = false,
     val error: TeamError? = null,
-    val isDemo: Boolean = false
+    val isDemo: Boolean = false,
+    val exportResult: ExportResult? = null
 ) {
     val selectedTeam: Team? get() = teams.firstOrNull { it.id == selectedTeamId }
 }
@@ -39,6 +42,18 @@ class TeamsViewModel(
     private var request: Job? = null
 
     fun exportCsv(): String = CsvExporter.generateCsv(_uiState.value.members)
+
+    fun onExportSaved() {
+        _uiState.update { it.copy(exportResult = ExportResult.SUCCESS) }
+    }
+
+    fun onExportFailed() {
+        _uiState.update { it.copy(exportResult = ExportResult.FAILED) }
+    }
+
+    fun onExportMessageShown() {
+        _uiState.update { it.copy(exportResult = null) }
+    }
 
     fun refresh() {
         request?.cancel()
