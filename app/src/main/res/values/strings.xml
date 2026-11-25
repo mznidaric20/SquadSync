@@ -86,7 +86,7 @@
     <string name="teams_data_unavailable">Podatke o momčadima nije moguće učitati. Pokušaj ponovno.</string>
 
     <string name="csv_export">Izvezi</string>
-    <string name="csv_export_saved">CSV datoteka je spremljena</string>
+    <string name="csv_export_saved">CSV datoteka je spremljena u mapu Download</string>
     <string name="csv_export_failed">Spremanje nije uspjelo</string>
 
     <!-- SCRUM-42: navigacija i kontrola pristupa prema korisnickim ulogama -->

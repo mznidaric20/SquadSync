@@ -10,8 +10,11 @@ import androidx.test.platform.app.InstrumentationRegistry
 import hr.foi.squadsync.R
 import hr.foi.squadsync.data.local.LocalTeamJoinRepository
 import hr.foi.squadsync.domain.auth.SessionState
+import hr.foi.squadsync.domain.auth.UserRole
 import hr.foi.squadsync.ui.auth.SquadSyncApp
 import hr.foi.squadsync.ui.teams.TeamsRoute
+import hr.foi.squadsync.ui.teams.TeamsScreen
+import hr.foi.squadsync.ui.teams.TeamsUiState
 import hr.foi.squadsync.ui.theme.SquadSyncTheme
 import java.io.File
 import kotlinx.coroutines.CompletableDeferred
@@ -25,6 +28,33 @@ class TeamMembersScreenTest {
     @get:Rule val compose = createComposeRule()
     private val scenario = TeamStoryScenario()
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    @Test fun athleteDoesNotSeeCsvExportButton() {
+        showExportScreen(UserRole.ATHLETE)
+        compose.onNodeWithTag("selected_team_name").assertExists()
+        compose.onNodeWithTag("teams_list").performScrollToIndex(3)
+        compose.onNodeWithTag("export_csv").assertDoesNotExist()
+    }
+
+    @Test fun coachSeesCsvExportButton() {
+        showExportScreen(UserRole.COACH)
+        compose.onNodeWithTag("teams_list").performScrollToIndex(3)
+        compose.onNodeWithTag("export_csv").performScrollTo().assertIsDisplayed().assertIsEnabled()
+    }
+
+    private fun showExportScreen(role: UserRole) {
+        compose.setContent {
+            SquadSyncTheme(darkTheme = false) {
+                TeamsScreen(
+                    state = TeamsUiState(
+                        teams = listOf(scenario.first), selectedTeamId = scenario.first.id,
+                        members = listOf(scenario.ana, scenario.ivan)
+                    ),
+                    onBack = {}, userRole = role
+                )
+            }
+        }
+    }
 
     @Test fun coachOpensMembersFromTheTeamCardAndReturnsToTheTeamList() {
         showApp()
@@ -93,6 +123,7 @@ class TeamMembersScreenTest {
         showApp()
         compose.onNodeWithTag("session_greeting").assertIsDisplayed()
         compose.onNodeWithTag("open_teams").assertDoesNotExist()
+        compose.onNodeWithTag("export_csv").assertDoesNotExist()
         compose.onNodeWithTag("team_selector").assertDoesNotExist()
         assertEquals(0, scenario.source.listCalls)
     }

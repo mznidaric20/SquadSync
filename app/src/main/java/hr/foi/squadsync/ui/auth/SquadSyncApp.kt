@@ -310,6 +310,7 @@ private fun AuthenticatedContent(
                 coachId = user.id,
                 teamId = selectedTeamId!!,
                 repository = teamRepository,
+                userRole = user.role,
                 onBack = {
                     teamDestination = TeamDestination.MY_TEAMS
                 }

@@ -9,7 +9,8 @@ enum class AccessAction {
     VIEW_OWN_TEAMS,
     VIEW_MEMBERS_OF_OWN_TEAMS,
     JOIN_TEAM,
-    VIEW_OWN_MEMBERSHIPS
+    VIEW_OWN_MEMBERSHIPS,
+    EXPORT_TEAM_CSV
 }
 
 object RoleAccessPolicy {
@@ -17,7 +18,8 @@ object RoleAccessPolicy {
         AccessAction.VIEW_OWN_PROFILE,
         AccessAction.CREATE_TEAM,
         AccessAction.VIEW_OWN_TEAMS,
-        AccessAction.VIEW_MEMBERS_OF_OWN_TEAMS
+        AccessAction.VIEW_MEMBERS_OF_OWN_TEAMS,
+        AccessAction.EXPORT_TEAM_CSV
     )
 
     private val athleteActions = setOf(

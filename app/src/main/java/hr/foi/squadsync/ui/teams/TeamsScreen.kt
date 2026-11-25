@@ -26,6 +26,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hr.foi.squadsync.R
+import hr.foi.squadsync.domain.auth.UserRole
+import hr.foi.squadsync.domain.access.AccessAction
+import hr.foi.squadsync.domain.access.RoleAccessPolicy
 import hr.foi.squadsync.domain.teams.TeamMember
 import hr.foi.squadsync.domain.teams.Team
 import hr.foi.squadsync.domain.teams.TeamError
@@ -45,7 +48,8 @@ fun TeamsScreen(
     onReload: () -> Unit = {},
     onExport: () -> Unit = {},
     isSaving: Boolean = false,
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    userRole: UserRole = UserRole.ATHLETE
 ) {
     val selectedTeam = state.selectedTeam
     Scaffold(
@@ -75,14 +79,16 @@ fun TeamsScreen(
                     RosterHeading(selectedTeam, onReload, !state.isLoadingMembers,
                         Modifier.widthIn(max = 680.dp).fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 16.dp))
                 }
-                item(key = "csv_export") {
-                    Button(
-                        onClick = onExport,
-                        enabled = !isSaving && !state.isLoadingMembers && state.error == null,
-                        modifier = Modifier.widthIn(max = 680.dp).fillMaxWidth()
-                            .padding(horizontal = 24.dp).padding(bottom = 16.dp).testTag("export_csv")
-                    ) {
-                        Text(stringResource(R.string.csv_export))
+                if (RoleAccessPolicy.canAccess(userRole, AccessAction.EXPORT_TEAM_CSV)) {
+                    item(key = "csv_export") {
+                        Button(
+                            onClick = onExport,
+                            enabled = !isSaving && !state.isLoadingMembers && state.error == null,
+                            modifier = Modifier.widthIn(max = 680.dp).fillMaxWidth()
+                                .padding(horizontal = 24.dp).padding(bottom = 16.dp).testTag("export_csv")
+                        ) {
+                            Text(stringResource(R.string.csv_export))
+                        }
                     }
                 }
                 if (state.isLoadingMembers) {
