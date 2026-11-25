@@ -2,6 +2,7 @@ package hr.foi.squadsync.ui.teams
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hr.foi.squadsync.domain.export.CsvExporter
 import hr.foi.squadsync.domain.teams.Team
 import hr.foi.squadsync.domain.teams.TeamError
 import hr.foi.squadsync.domain.teams.TeamException
@@ -36,6 +37,8 @@ class TeamsViewModel(
     private val _uiState = MutableStateFlow(TeamsUiState(isLoading = true, isDemo = isDemo))
     val uiState = _uiState.asStateFlow()
     private var request: Job? = null
+
+    fun exportCsv(): String = CsvExporter.generateCsv(_uiState.value.members)
 
     fun refresh() {
         request?.cancel()

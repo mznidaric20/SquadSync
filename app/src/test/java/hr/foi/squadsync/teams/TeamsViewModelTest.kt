@@ -18,6 +18,30 @@ class TeamsViewModelTest {
     @get:Rule val mainDispatcherRule = MainDispatcherRule()
     private val repository = TestTeamRepository()
 
+    @Test fun givenLoadedTeam_whenExportCsv_thenCsvContainsTeamAthletes() = runTest {
+        val viewModel = TeamsViewModel(repository, ownTeam.id)
+        try {
+            viewModel.refresh()
+            runCurrent()
+
+            val csv = viewModel.exportCsv()
+
+            assertEquals("ime,prezime,email\nIvan,Marić,ivan@primjer.com\n", csv)
+        } finally { viewModel.viewModelScope.cancel() }
+    }
+
+    @Test fun givenEmptyTeam_whenExportCsv_thenCsvContainsOnlyHeader() = runTest {
+        val viewModel = TeamsViewModel(repository, emptyTeam.id)
+        try {
+            viewModel.refresh()
+            runCurrent()
+
+            val csv = viewModel.exportCsv()
+
+            assertEquals("ime,prezime,email\n", csv)
+        } finally { viewModel.viewModelScope.cancel() }
+    }
+
     @Test fun loadsOnlyTheTeamRequestedByTheCard() = runTest {
         val viewModel = TeamsViewModel(repository, emptyTeam.id)
         try {
