@@ -7,6 +7,9 @@ data class CsvResult(
 
 object CsvParser {
 
+    private val emailRegex =
+        Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
+
     fun parse(csv: String): CsvResult {
         val rows = csv.lines()
             .drop(1)
@@ -23,7 +26,8 @@ object CsvParser {
 
             if (firstName.isBlank() ||
                 lastName.isBlank() ||
-                email.isBlank()
+                email.isBlank() ||
+                !emailRegex.matches(email)
             ) {
                 invalidRows.add(row)
             } else {

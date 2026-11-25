@@ -72,3 +72,12 @@ AI alat: ChatGPT
 - Odluka tima: Napisati test prije implementacije validacije.
 - Rezultat: Test očekivano ne prolazi.
 
+### XP-04 – Validacija formata e-maila – GREEN
+
+- Upit AI-ju: Dalje.
+- Prijedlog AI-ja: Korištenje regularnog izraza
+  za provjeru formata e-mail adrese.
+- Odluka tima: Proširiti postojeću validaciju.
+- Rezultat: Svih pet testova uspješno prolazi.
+
+

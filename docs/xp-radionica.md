@@ -84,3 +84,12 @@
 - Razlog: provjera formata e-maila nije implementirana.
 - Rezultat: 4 testa prolaze, 1 ne prolazi.
 
+#### GREEN faza
+
+- Implementirana validacija formata e-mail adrese.
+- Za provjeru se koristi regularni izraz (Regex).
+- Redci s neispravnim e-mailom označavaju se kao neispravni.
+- Rezultat: 5 testova prolazi, 0 neuspjelih.
+- Status: PASSED.
+
+
