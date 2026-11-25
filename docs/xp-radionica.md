@@ -17,3 +17,14 @@
 - Očekivani rezultat ponovljenog testa: 2 ispravna retka i 0 neispravnih redaka.
 - Stvarni rezultat i status: potrebno potvrditi ponovnim pokretanjem testa.
 - Validacija imena, prezimena i e-maila nije dio ovog TDD ciklusa.
+
+### TDD ciklus 2 – Validacija imena
+
+#### RED faza
+
+- Test: csvWithoutFirstNameShouldBeInvalid
+- Očekivani rezultat: 0 ispravnih redaka.
+- Dobiveni rezultat: 1 ispravan redak.
+- Status: FAILED (očekivano).
+- Razlog: validacija imena još nije implementirana.
+- Rezultat svih testova: 1 prolazi, 1 ne prolazi.

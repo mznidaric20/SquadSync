@@ -17,3 +17,10 @@ AI alat: ChatGPT
 - **Prijedlog AI-ja:** implementirati minimalno čitanje CSV-a preskakanjem zaglavlja i praznih redaka, bez dodatne validacije.
 - **Provjera:** potrebno ponovno pokrenuti postojeći jedinični test i potvrditi prolaznost.
 - **Rezultat:** još nije potvrđen.
+
+### XP-04 – Validacija imena – RED faza
+
+- Upit AI-ju: Koji je sljedeći test?
+- Prijedlog AI-ja: Testiranje CSV retka bez imena.
+- Odluka tima: Napisati test prije implementacije validacije.
+- Rezultat: Test očekivano ne prolazi.
