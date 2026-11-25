@@ -85,6 +85,10 @@
     <string name="teams_not_found">Odabrana momčad više nije dostupna. Osvježi popis i odaberi drugu momčad.</string>
     <string name="teams_data_unavailable">Podatke o momčadima nije moguće učitati. Pokušaj ponovno.</string>
 
+    <string name="csv_export">Izvezi</string>
+    <string name="csv_export_saved">CSV datoteka je spremljena</string>
+    <string name="csv_export_failed">Spremanje nije uspjelo</string>
+
     <!-- SCRUM-42: navigacija i kontrola pristupa prema korisnickim ulogama -->
 
     <string name="access_tab_profile">Profil</string>

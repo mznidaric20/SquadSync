@@ -42,13 +42,17 @@ fun TeamsScreen(
     state: TeamsUiState,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    onReload: () -> Unit = {}
+    onReload: () -> Unit = {},
+    onExport: () -> Unit = {},
+    isSaving: Boolean = false,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     val selectedTeam = state.selectedTeam
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = { TeamsTopBar(onBack) }
+        topBar = { TeamsTopBar(onBack) },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(innerPadding).consumeWindowInsets(innerPadding)
@@ -70,6 +74,16 @@ fun TeamsScreen(
                 item(key = "members_heading") {
                     RosterHeading(selectedTeam, onReload, !state.isLoadingMembers,
                         Modifier.widthIn(max = 680.dp).fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 16.dp))
+                }
+                item(key = "csv_export") {
+                    Button(
+                        onClick = onExport,
+                        enabled = !isSaving && !state.isLoadingMembers && state.error == null,
+                        modifier = Modifier.widthIn(max = 680.dp).fillMaxWidth()
+                            .padding(horizontal = 24.dp).padding(bottom = 16.dp).testTag("export_csv")
+                    ) {
+                        Text(stringResource(R.string.csv_export))
+                    }
                 }
                 if (state.isLoadingMembers) {
                     item(key = "loading_members") {
