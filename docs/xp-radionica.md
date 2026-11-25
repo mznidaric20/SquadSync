@@ -1,0 +1,19 @@
+# XP radionica
+
+## XP-04 – Uvoz sportaša iz CSV datoteke
+
+### TDD – RED faza
+
+- Napisan je jedinični test `validCsvShouldReturnTwoAthletes` prije implementacije logike CSV parsera.
+- Test provjerava učitavanje dva ispravna retka iz CSV datoteke sa zaglavljem `ime,prezime,email`.
+- Očekivani rezultat: 2 ispravna retka i 0 neispravnih redaka.
+- Dobiveni rezultat: 0 ispravnih redaka.
+- Status: FAILED (očekivano).
+- Razlog: parser još nema implementiranu logiku čitanja redaka.
+
+### TDD – GREEN faza
+
+- Predložena je minimalna implementacija CSV parsera koja preskače zaglavlje i prazne retke.
+- Očekivani rezultat ponovljenog testa: 2 ispravna retka i 0 neispravnih redaka.
+- Stvarni rezultat i status: potrebno potvrditi ponovnim pokretanjem testa.
+- Validacija imena, prezimena i e-maila nije dio ovog TDD ciklusa.
