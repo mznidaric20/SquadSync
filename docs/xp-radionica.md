@@ -103,4 +103,13 @@
 - Razlog: broj CSV stupaca nije provjeren.
 - Rezultat: 5 testova prolazi, 1 ne prolazi.
 
+#### GREEN faza
+
+- Implementirana validacija broja CSV stupaca.
+- Svaki redak mora sadržavati točno tri stupca.
+- Redci s viškom ili manjkom stupaca označavaju
+  se kao neispravni.
+- Rezultat: 6 testova prolazi, 0 neuspjelih.
+- Status: PASSED.
+
 

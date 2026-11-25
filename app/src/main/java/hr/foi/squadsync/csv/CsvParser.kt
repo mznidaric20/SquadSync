@@ -20,9 +20,15 @@ object CsvParser {
 
         for (row in rows) {
             val columns = row.split(",")
+
+            if (columns.size != 3) {
+                invalidRows.add(row)
+                continue
+            }
+
             val firstName = columns[0].trim()
-            val lastName = columns.getOrElse(1) { "" }.trim()
-            val email = columns.getOrElse(2) { "" }.trim()
+            val lastName = columns[1].trim()
+            val email = columns[2].trim()
 
             if (firstName.isBlank() ||
                 lastName.isBlank() ||

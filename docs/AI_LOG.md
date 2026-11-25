@@ -88,4 +88,14 @@ AI alat: ChatGPT
 - Odluka tima: Napisati test prije implementacije.
 - Rezultat: Test očekivano ne prolazi.
 
+### XP-04 – Validacija broja stupaca – GREEN
+
+- Upit AI-ju: Dalje.
+- Prijedlog AI-ja: Provjera broja stupaca
+  pomoću columns.size != 3.
+- Odluka tima: Odbaciti retke s neispravnim
+  brojem stupaca prije daljnje validacije.
+- Rezultat: Svih šest testova uspješno prolazi.
+
+
 
