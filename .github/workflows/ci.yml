@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, "xp-radionica/**"]
+  pull_request:
+    branches: [dev, "xp-radionica/dev"]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@v4
+      # gradlew u gitu nema oznaku izvrsne datoteke, pa je postavljamo ovdje
+      - run: chmod +x gradlew
+      - run: ./gradlew :app:testDebugUnitTest
