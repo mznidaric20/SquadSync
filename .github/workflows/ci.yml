@@ -19,3 +19,6 @@ jobs:
       # gradlew u gitu nema oznaku izvrsne datoteke, pa je postavljamo ovdje
       - run: chmod +x gradlew
       - run: ./gradlew :app:testDebugUnitTest
+      # Android testovi se ovdje samo prevode, za pokretanje treba emulator
+      - run: ./gradlew :app:compileDebugAndroidTestKotlin
+      - run: ./gradlew :app:lintDebug
